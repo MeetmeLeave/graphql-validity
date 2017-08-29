@@ -11,8 +11,8 @@ const schema = require('./schema');
 
 const app = express();
 
-function validateSomeTestThing(parentTypeName, field, ...args) {
-    return [new Error('Wrong stuff here! ' + parentTypeName + ':' + field.name)];
+function validateSomeTestThing(...args) {
+    return [new Error('Wrong stuff here!')];
 }
 
 FieldValidationDefinitions['TestType'] = [validateSomeTestThing];
