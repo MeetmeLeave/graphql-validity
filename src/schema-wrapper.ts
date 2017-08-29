@@ -39,7 +39,7 @@ function wrapField(field: any, parentTypeName: string) {
             for (let validator of validators) {
                 Array.prototype.push.apply(
                     validationResults,
-                    await validator.call(this, parentTypeName, field, ...args)
+                    await validator.call(this, ...args)
                 );
             }
 
