@@ -1,12 +1,7 @@
-import {
-    GraphQLObjectType,
-    GraphQLSchema,
-} from 'graphql';
-
 export const Processed = Symbol();
 export const FieldValidationDefinitions: any = {};
 
-const validationResults: any[] = [];
+let validationResults: any[] = [];
 
 export function wrapExtension({ result }: any) {
     result.errors = validationResults.map(error => {
@@ -14,6 +9,8 @@ export function wrapExtension({ result }: any) {
             message: error.message
         };
     });
+
+    validationResults = [];
     return null;
 }
 
@@ -36,11 +33,9 @@ function wrapField(field: any) {
     field[Processed] = true;
     field.resolve = async function (...args: any[]) {
         try {
-            if (validationResults) {
-                let validators = FieldValidationDefinitions[field.type] || [];
-                for (let validator of validators) {
-                    Array.prototype.push.apply(validationResults, await validator.call(this, ...args));
-                }
+            let validators = FieldValidationDefinitions[field.type] || [];
+            for (let validator of validators) {
+                Array.prototype.push.apply(validationResults, await validator.call(this, ...args));
             }
 
             return await resolve.call(this, ...args);
