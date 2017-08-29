@@ -45,7 +45,6 @@ function wrapField(field: any, parentTypeName: string) {
 
             return await resolve.call(this, ...args);
         } catch (e) {
-            console.error('err', e);
             throw e;
         }
     };
