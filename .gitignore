@@ -6,5 +6,6 @@ lib
 build
 *.log
 *.js
+!examples/*.js
 *.d.ts
 *.js.map
