@@ -2,7 +2,7 @@
   "name": "graphql-validity",
   "version": "0.0.1",
   "description": "A set of wrapper functions to make validation, error handling, output manipulation and adding middleware simple for express-graphql.",
-  "main": "src/index.js",
+  "main": "lib/index.js",
   "scripts": {
     "build": "rm -rf lib && ./node_modules/.bin/tsc -p src"
   },
@@ -11,6 +11,14 @@
     "errors",
     "validation"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:MeetmeLeave/graphql-validity.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MeetmeLeave/graphql-validity/issues"
+  },
+  "homepage": "https://github.com/MeetmeLeave/ng-canvas-gauges",
   "author": "Vlad Martynenko <vladimir.martynenko.work@gmail.com>",
   "license": "MIT",
   "dependencies": {
