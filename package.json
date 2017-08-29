@@ -1,0 +1,26 @@
+{
+  "name": "graphql-validity",
+  "version": "0.0.1",
+  "description": "A set of wrapper functions to make validation, error handling, output manipulation and adding middleware simple for express-graphql.",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "rm -rf lib && ./node_modules/.bin/tsc -p src"
+  },
+  "keywords": [
+    "graphql",
+    "errors",
+    "validation"
+  ],
+  "author": "Vlad Martynenko <vladimir.martynenko.work@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@types/body-parser": "^1.16.5",
+    "@types/express-graphql": "0.0.33",
+    "@types/graphql": "^0.10.2",
+    "@types/graphql-relay": "^0.4.2",
+    "@types/node": "^8.0.25",
+    "graphql": "^0.10.5",
+    "graphql-relay": "^0.5.2",
+    "typescript": "^2.5.1"
+  }
+}

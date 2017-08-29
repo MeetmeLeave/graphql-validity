@@ -1,0 +1,10 @@
+npm-debug.log
+node_modules
+jspm_packages
+.idea
+lib
+build
+*.log
+*.js
+*.d.ts
+*.js.map
