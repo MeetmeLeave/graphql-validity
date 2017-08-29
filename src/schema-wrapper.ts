@@ -14,17 +14,17 @@ export function wrapExtension({ result }: any) {
     return null;
 }
 
-export function wrapResolvers(entity: any) {
+export function wrapResolvers(entity: any, parentTypeName: string = '') {
     if (entity.constructor.name === 'GraphQLSchema') {
         wrapSchema(entity);
     } else if (entity.constructor.name === 'GraphQLObjectType') {
         wrapType(entity);
     } else {
-        wrapField(entity);
+        wrapField(entity, parentTypeName);
     }
 }
 
-function wrapField(field: any) {
+function wrapField(field: any, parentTypeName: string) {
     const resolve = field.resolve;
     if (field[Processed] || !resolve) {
         return;
@@ -33,9 +33,14 @@ function wrapField(field: any) {
     field[Processed] = true;
     field.resolve = async function (...args: any[]) {
         try {
-            let validators = FieldValidationDefinitions[field.type] || [];
+            let validators = FieldValidationDefinitions[field.type]
+                || FieldValidationDefinitions[parentTypeName + ':' + field.name]
+                || [];
             for (let validator of validators) {
-                Array.prototype.push.apply(validationResults, await validator.call(this, ...args));
+                Array.prototype.push.apply(
+                    validationResults,
+                    await validator.call(this, parentTypeName, field, ...args)
+                );
             }
 
             return await resolve.call(this, ...args);
@@ -57,7 +62,7 @@ function wrapType(type: any) {
             continue;
         }
 
-        wrapField(fields[fieldName]);
+        wrapField(fields[fieldName], type);
     }
 }
 
