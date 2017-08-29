@@ -36,6 +36,25 @@ const schema = new GraphQLSchema({
                 }
             }
         }
+    }),
+    mutation: new GraphQLObjectType({
+        name: 'Mutation',
+        fields: {
+            testMutation: {
+                type: TestType,
+                args: {
+                    test: {
+                        type: GraphQLString
+                    }
+                },
+                resolve() {
+                    return {
+                        first: 'dsfs',
+                        second: 'dsfsdf'
+                    }
+                }
+            }
+        }
     })
 });
 
