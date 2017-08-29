@@ -1,17 +1,22 @@
 export const Processed = Symbol();
 export const FieldValidationDefinitions: any = {};
 
-let validationResults: any[] = [];
+export function wrapExtension(request) {
+    request.___validationResults = [];
 
-export function wrapExtension({ result }: any) {
-    result.errors = validationResults.map(error => {
-        return {
-            message: error.message
-        };
-    });
+    return function ({ result }: any) {
+        result.errors =
+            (result.errors || [])
+                .concat(
+                    request.___validationResults.map(error => {
+                        return {
+                            message: error.message
+                        };
+                    })
+                );
 
-    validationResults = [];
-    return null;
+        return null;
+    }
 }
 
 export function wrapResolvers(entity: any, parentTypeName: string = '') {
@@ -33,9 +38,22 @@ function wrapField(field: any, parentTypeName: string) {
     field[Processed] = true;
     field.resolve = async function (...args: any[]) {
         try {
-            let validators = FieldValidationDefinitions[field.type]
-                || FieldValidationDefinitions[parentTypeName + ':' + field.name]
-                || [];
+            let validationResults = args[2].___validationResults;
+
+            let validators =
+                (
+                    FieldValidationDefinitions['*']
+                    || []
+                ).concat
+                (
+                    FieldValidationDefinitions[field.type]
+                    || []
+                ).concat
+                (
+                    FieldValidationDefinitions[parentTypeName + ':' + field.name]
+                    || []
+                )
+
             for (let validator of validators) {
                 Array.prototype.push.apply(
                     validationResults,
