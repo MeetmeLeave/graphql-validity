@@ -1,7 +1,20 @@
+import { GraphQLObjectType, GraphQLSchema } from "graphql";
+
+// Indicates whether schema entity was already processed
 export const Processed = Symbol();
+
+/* An object which stores all validator functions
+    required to be executed during graphql request */
 export const FieldValidationDefinitions: any = {};
 
-export function wrapExtension(request) {
+/**
+ * Must be used to wrap the extension variable on the graphqlHTTP object
+ *
+ * @param request - http request object, from the express middleware.
+ * @returns {Function} - returns function for the extension variable
+ * which adds additional changes to the result object.
+ */
+export function wrapExtension(request): Function {
     if (request) {
         request.___validationResults = [];
 
@@ -20,12 +33,20 @@ export function wrapExtension(request) {
         }
     }
     else {
-        return function ({ result }: any) {
+        return function (...args: any[]) {
             return null;
         }
     }
 }
 
+/**
+ * Top level wrapper for the GraphQL schema entities
+ * which replaces resolve function if any found
+ *
+ * @param entity - GraphQL object entity
+ * @param {string} parentTypeName - name of the parent object
+ * if used to wrap field directly
+ */
 export function wrapResolvers(entity: any, parentTypeName: string = '') {
     if (entity.constructor.name === 'GraphQLSchema') {
         wrapSchema(entity);
@@ -36,6 +57,12 @@ export function wrapResolvers(entity: any, parentTypeName: string = '') {
     }
 }
 
+/**
+ * Internal function which performs resolvers wrapping with common async function
+ *
+ * @param field - GraphQL entity field
+ * @param {string} parentTypeName - field's parent object name
+ */
 function wrapField(field: any, parentTypeName: string) {
     const resolve = field.resolve;
     if (field[Processed] || !resolve) {
@@ -82,7 +109,12 @@ function wrapField(field: any, parentTypeName: string) {
     };
 }
 
-function wrapType(type: any) {
+/**
+ * Wraps each field of the GraphQLObjectType entity
+ *
+ * @param {GraphQLObjectType} type - GraphQLObject schema entity
+ */
+function wrapType(type: GraphQLObjectType) {
     if (type[Processed] || !type.getFields) {
         return;
     }
@@ -93,17 +125,22 @@ function wrapType(type: any) {
             continue;
         }
 
-        wrapField(fields[fieldName], type);
+        wrapField(fields[fieldName], type.name);
     }
 }
 
-function wrapSchema(schema: any) {
+/**
+ * Wraps each GraphQLObjectType fields resolver for entire GraphQL Schema
+ *
+ * @param {GraphQLSchema} schema - schema object that must be wrapped
+ */
+function wrapSchema(schema: GraphQLSchema) {
     const types = schema.getTypeMap();
     for (const typeName in types) {
         if (!Object.hasOwnProperty.call(types, typeName)) {
             continue;
         }
 
-        wrapType(types[typeName]);
+        wrapType(<GraphQLObjectType>types[typeName]);
     }
 }
