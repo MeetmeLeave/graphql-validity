@@ -45,32 +45,34 @@ function wrapField(field: any, parentTypeName: string) {
     field[Processed] = true;
     field.resolve = async function (...args: any[]) {
         try {
-            let validationResults = args[2].___validationResults;
+            if (args[2]) {
+                let validationResults = args[2].___validationResults;
 
-            if (!validationResults) {
-                args[2].___validationResults = [];
-                validationResults = args[2].___validationResults;
-            }
+                if (!validationResults) {
+                    args[2].___validationResults = [];
+                    validationResults = args[2].___validationResults;
+                }
 
-            let validators =
-                (
-                    FieldValidationDefinitions['*']
-                    || []
-                ).concat
-                (
-                    FieldValidationDefinitions[field.type]
-                    || []
-                ).concat
-                (
-                    FieldValidationDefinitions[parentTypeName + ':' + field.name]
-                    || []
-                )
+                let validators =
+                    (
+                        FieldValidationDefinitions['*']
+                        || []
+                    ).concat
+                    (
+                        FieldValidationDefinitions[field.type]
+                        || []
+                    ).concat
+                    (
+                        FieldValidationDefinitions[parentTypeName + ':' + field.name]
+                        || []
+                    )
 
-            for (let validator of validators) {
-                Array.prototype.push.apply(
-                    validationResults,
-                    await validator.call(this, ...args)
-                );
+                for (let validator of validators) {
+                    Array.prototype.push.apply(
+                        validationResults,
+                        await validator.call(this, ...args)
+                    );
+                }
             }
 
             return await resolve.call(this, ...args);
