@@ -25,7 +25,7 @@ function validateSomeTestMutation(...args) {
 
 FieldValidationDefinitions['*'] = [applyToAll];
 FieldValidationDefinitions['Mutation:testMutation'] = [validateSomeTestMutation];
-// FieldValidationDefinitions['TestType'] = [validateSomeTestThing];
+FieldValidationDefinitions['TestType'] = [validateSomeTestThing];
 FieldValidationDefinitions['TestType:first'] = [validateSomeTestThing];
 FieldValidationDefinitions['TestType:second'] = [validateSomeTestThing];
 
