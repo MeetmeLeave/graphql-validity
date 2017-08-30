@@ -2,20 +2,27 @@ export const Processed = Symbol();
 export const FieldValidationDefinitions: any = {};
 
 export function wrapExtension(request) {
-    request.___validationResults = [];
+    if (request) {
+        request.___validationResults = [];
 
-    return function ({ result }: any) {
-        result.errors =
-            (result.errors || [])
-                .concat(
-                    request.___validationResults.map(error => {
-                        return {
-                            message: error.message
-                        };
-                    })
-                );
+        return function ({ result }: any) {
+            result.errors =
+                (result.errors || [])
+                    .concat(
+                        request.___validationResults.map(error => {
+                            return {
+                                message: error.message
+                            };
+                        })
+                    );
 
-        return null;
+            return null;
+        }
+    }
+    else {
+        return function ({ result }: any) {
+            return null;
+        }
     }
 }
 
@@ -39,6 +46,11 @@ function wrapField(field: any, parentTypeName: string) {
     field.resolve = async function (...args: any[]) {
         try {
             let validationResults = args[2].___validationResults;
+
+            if (!validationResults) {
+                args[2].___validationResults = [];
+                validationResults = args[2].___validationResults;
+            }
 
             let validators =
                 (
