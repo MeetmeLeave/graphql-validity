@@ -1,6 +1,6 @@
 {
   "name": "graphql-validity",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "A set of wrapper functions to make validation, error handling, output manipulation and adding middleware simple for express-graphql.",
   "main": "lib/index.js",
   "scripts": {
