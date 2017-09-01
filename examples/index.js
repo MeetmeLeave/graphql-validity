@@ -12,7 +12,7 @@ const schema = require('./schema');
 const app = express();
 
 function validateSomeTestThing(...args) {
-    return [new Error('Wrong stuff here!')];
+    throw new Error('Wrong stuff here!');
 }
 
 function applyToAll(...args) {
@@ -29,7 +29,9 @@ FieldValidationDefinitions['TestType'] = [validateSomeTestThing];
 FieldValidationDefinitions['TestType:first'] = [validateSomeTestThing];
 FieldValidationDefinitions['TestType:second'] = [validateSomeTestThing];
 
-wrapResolvers(schema);
+wrapResolvers(schema, {
+    wrapErrors: true
+});
 
 app.use('/graphql', graphqlHTTP((request) => {
     return {
