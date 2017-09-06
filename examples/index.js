@@ -19,10 +19,15 @@ function applyToAll(...args) {
     return [new Error('All failed!')];
 }
 
+function applyGlobally(...args) {
+    return [new Error('Global failed!')];
+}
+
 function validateSomeTestMutation(...args) {
     return [new Error('testMutation failed!')];
 }
 
+FieldValidationDefinitions['$'] = [applyGlobally];
 FieldValidationDefinitions['*'] = [applyToAll];
 FieldValidationDefinitions['Mutation:testMutation'] = [validateSomeTestMutation];
 FieldValidationDefinitions['TestType'] = [validateSomeTestThing];
