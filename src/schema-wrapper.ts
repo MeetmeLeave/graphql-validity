@@ -41,12 +41,20 @@ function onUnhandledError(error: Error) {
 export function wrapExtension(request): Function {
     if (request) {
         request.___validationResults = [];
+        request.___globalValidationResults = [];
 
         return function ({ result }: any) {
             result.errors =
                 (result.errors || [])
                     .concat(
                         request.___validationResults.map(error => {
+                            return {
+                                message: error.message
+                            };
+                        })
+                    )
+                    .concat(
+                        request.___globalValidationResults.map(error => {
                             return {
                                 message: error.message
                             };
@@ -100,7 +108,11 @@ export function wrapResolvers(entity: any, config?: ValidityConfig) {
  * @param field - GraphQL entity field
  * @param {ValidityConfig} config - setup options for the wrapper function
  */
-function wrapField(field: any, config: ValidityConfig, parentTypeName?: string) {
+function wrapField(
+    field: any,
+    config: ValidityConfig,
+    parentTypeName?: string
+) {
     parentTypeName = parentTypeName || config.parentTypeName;
 
     const resolve = field.resolve;
@@ -112,26 +124,24 @@ function wrapField(field: any, config: ValidityConfig, parentTypeName?: string) 
     field.resolve = async function (...args: any[]) {
         try {
             if (args[2]) {
-                let validationResults = args[2].___validationResults;
+                let {
+                    validationResults,
+                    globalValidationResults
+                } = getValidationResults(args[2]);
 
-                if (!validationResults) {
-                    args[2].___validationResults = [];
-                    validationResults = args[2].___validationResults;
+                let {
+                    validators,
+                    globalValidators
+                } = getValidators(field, parentTypeName);
+
+                if (!globalValidationResults.length) {
+                    for (let validator of globalValidators) {
+                        Array.prototype.push.apply(
+                            globalValidationResults,
+                            await validator.call(this, ...args)
+                        );
+                    }
                 }
-
-                let validators =
-                    (
-                        FieldValidationDefinitions['*']
-                        || []
-                    ).concat
-                    (
-                        FieldValidationDefinitions[field.type]
-                        || []
-                    ).concat
-                    (
-                        FieldValidationDefinitions[parentTypeName + ':' + field.name]
-                        || []
-                    )
 
                 for (let validator of validators) {
                     Array.prototype.push.apply(
@@ -150,6 +160,64 @@ function wrapField(field: any, config: ValidityConfig, parentTypeName?: string) 
             throw e;
         }
     };
+}
+
+/**
+ * Returns lists of graphql validation messages arrays from request object
+ *
+ * @param request - express request object
+ * @returns {{validationResults: any; globalValidationResults: any}} -
+ * list of validation result messages for both local and global validators
+ */
+function getValidationResults(request: any) {
+    let validationResults = request.___validationResults;
+
+    if (!validationResults) {
+        request.___validationResults = [];
+        validationResults = request.___validationResults;
+    }
+
+    let globalValidationResults = request.___globalValidationResults;
+
+    if (!globalValidationResults) {
+        request.___globalValidationResults = [];
+        globalValidationResults = request.___globalValidationResults;
+    }
+
+    return {
+        validationResults,
+        globalValidationResults
+    }
+}
+
+/**
+ * Return list of local and global validators
+ * @param field - field which will be validated
+ * @param {string} parentTypeName - name of the parent object where field belongs to
+ * @returns {{validators: T[]; globalValidators: (any | Array)}}
+ * - list of local and global validator functions
+ */
+function getValidators(field: any, parentTypeName: string) {
+    let validators =
+        (
+            FieldValidationDefinitions['*']
+            || []
+        ).concat
+        (
+            FieldValidationDefinitions[field.type]
+            || []
+        ).concat
+        (
+            FieldValidationDefinitions[parentTypeName + ':' + field.name]
+            || []
+        )
+
+    let globalValidators = FieldValidationDefinitions['$'] || [];
+
+    return {
+        validators,
+        globalValidators
+    }
 }
 
 /**
