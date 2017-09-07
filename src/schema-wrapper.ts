@@ -44,6 +44,8 @@ export function wrapExtension(request): Function {
         request.___globalValidationResults;
 
         return function ({ result }: any) {
+            let globalValidationResults = request.___globalValidationResults
+                || [];
             result.errors =
                 (result.errors || [])
                     .concat(
@@ -54,7 +56,7 @@ export function wrapExtension(request): Function {
                         })
                     )
                     .concat(
-                        request.___globalValidationResults.map(error => {
+                        globalValidationResults.map(error => {
                             return {
                                 message: error.message
                             };
