@@ -41,7 +41,7 @@ function onUnhandledError(error: Error) {
 export function wrapExtension(request): Function {
     if (request) {
         request.___validationResults = [];
-        request.___globalValidationResults = [];
+        request.___globalValidationResults;
 
         return function ({ result }: any) {
             result.errors =
@@ -123,18 +123,21 @@ function wrapField(
     field[Processed] = true;
     field.resolve = async function (...args: any[]) {
         try {
-            if (args[2]) {
+            let request = args[2];
+            if (request) {
                 let {
                     validationResults,
                     globalValidationResults
-                } = getValidationResults(args[2]);
+                } = getValidationResults(request);
 
                 let {
                     validators,
                     globalValidators
                 } = getValidators(field, parentTypeName);
 
-                if (!globalValidationResults.length) {
+                if (!globalValidationResults) {
+                    request.___globalValidationResults = [];
+                    globalValidationResults = request.___globalValidationResults;
                     for (let validator of globalValidators) {
                         Array.prototype.push.apply(
                             globalValidationResults,
@@ -178,11 +181,6 @@ function getValidationResults(request: any) {
     }
 
     let globalValidationResults = request.___globalValidationResults;
-
-    if (!globalValidationResults) {
-        request.___globalValidationResults = [];
-        globalValidationResults = request.___globalValidationResults;
-    }
 
     return {
         validationResults,
