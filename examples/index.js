@@ -5,7 +5,7 @@ const {
     FieldValidationDefinitions,
     wrapResolvers,
     wrapExtension
-} = require("../lib");
+} = require("graphql-validity");
 
 const schema = require('./schema');
 
