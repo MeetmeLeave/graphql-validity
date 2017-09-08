@@ -125,7 +125,14 @@ function wrapField(
     field[Processed] = true;
     field.resolve = async function (...args: any[]) {
         try {
-            let request = args[2];
+            let request;
+            for (let arg of [...args]) {
+                if (arg && arg.___validationResults) {
+                    request = arg;
+                    break;
+                }
+            }
+
             if (request) {
                 let {
                     validationResults,
