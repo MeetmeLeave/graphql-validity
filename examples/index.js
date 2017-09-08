@@ -12,7 +12,7 @@ const schema = require('./schema');
 const app = express();
 
 function validateSomeTestThing(...args) {
-    throw new Error('Wrong stuff here!');
+    return [new Error('Wrong stuff here!')];
 }
 
 function applyToAll(...args) {
@@ -42,6 +42,8 @@ app.use('/graphql', graphqlHTTP((request) => {
     return {
         schema,
         graphiql: true,
+        context: {},
+        rootValue: request,
         extensions: wrapExtension(request)
     }
 }));
