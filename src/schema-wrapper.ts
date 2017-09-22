@@ -47,25 +47,7 @@ export function wrapExtension(request: any): Function {
 
         return function ({ result }: any) {
             const validity = request.__graphQLValidity;
-            let globalValidationResults = validity.___globalValidationResults
-                || [];
-            result.errors =
-                (result.errors || [])
-                    .concat(
-                        validity.___validationResults.map(
-                            error => {
-                                return {
-                                    message: error.message
-                                };
-                            })
-                    )
-                    .concat(
-                        globalValidationResults.map(error => {
-                            return {
-                                message: error.message
-                            };
-                        })
-                    );
+            getResponseValidationResults(validity, result);
 
             return null;
         }
@@ -96,26 +78,9 @@ export function graphQLValidityMiddleware(req: any, res: any, next: any) {
             try {
                 let result = JSON.parse(data);
                 const validity = req.__graphQLValidity;
+
                 if (result.data) {
-                    let globalValidationResults = validity.___globalValidationResults
-                        || [];
-                    result.errors =
-                        (result.errors || [])
-                            .concat(
-                                validity.___validationResults.map(
-                                    error => {
-                                        return {
-                                            message: error.message
-                                        };
-                                    })
-                            )
-                            .concat(
-                                globalValidationResults.map(error => {
-                                    return {
-                                        message: error.message
-                                    };
-                                })
-                            );
+                    getResponseValidationResults(validity, result);
                     arguments[0] = JSON.stringify(result);
                 }
             }
@@ -133,6 +98,34 @@ export function graphQLValidityMiddleware(req: any, res: any, next: any) {
     finally {
         next();
     }
+}
+
+/**
+ * Builds errors array, using validation and global validation results
+ *
+ * @param validity - an object injected to request at the beginning of the http call
+ * @param data - result of graphql call
+ */
+function getResponseValidationResults(validity: any, data: any) {
+    let globalValidationResults = validity.___globalValidationResults
+        || [];
+    data.errors =
+        (data.errors || [])
+            .concat(
+                validity.___validationResults.map(
+                    error => {
+                        return {
+                            message: error.message
+                        };
+                    })
+            )
+            .concat(
+                globalValidationResults.map(error => {
+                    return {
+                        message: error.message
+                    };
+                })
+            );
 }
 
 /**
