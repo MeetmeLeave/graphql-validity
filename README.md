@@ -25,8 +25,8 @@ const schema = require('./schema');
 
 const app = express();
 
-// define validator functions
-// each function should throw an error or return array of error objects
+// Define validator functions
+// each function should throw an error or return array of error objects or an empty array if everything is good
 function validateSomeTestThing(...args) {
     return [new Error('Wrong stuff here!')];
 }
@@ -43,7 +43,8 @@ function validateSomeTestMutation(...args) {
     return [new Error('testMutation failed!')];
 }
 
-// define where to use validator, $ will checked ones, but for any resolver called
+// Define what to validate:
+// $ will be checked ones, but for any resolver called
 // * - will be called for each resolver
 // ObjectName:FieldName - Will be called for a field resolver on a particular object
 // ObjectName - Will be called for each resolver field on a particular object
@@ -54,10 +55,10 @@ FieldValidationDefinitions['TestType'] = [validateSomeTestThing];
 FieldValidationDefinitions['TestType:first'] = [validateSomeTestThing];
 FieldValidationDefinitions['TestType:second'] = [validateSomeTestThing];
 
-// wraps your resolvers schema with validators automatically
+// Wraps your resolvers schema with validators automatically
 wrapResolvers(schema);
 
-// add middleware to express to make this lib work, as we need to connect schema validation 
+// Add middleware to express to make this lib work, as we need to connect schema validation 
 // results with request/response we got
 app.use(graphQLValidityMiddleware);
 
@@ -76,7 +77,7 @@ More info and stuff will come in the future as lib is still work in progress che
 
 The current road map:
 
-1. Stabilization, tests, examples, etc.
+1. Stabilization, tests, examples, docs, etc.
 2. Adding optional performance checks to track speed of each call
 3. Adding optional built in logging of requests
 4. Adding third party output options like warnings/info etc along data and errors
