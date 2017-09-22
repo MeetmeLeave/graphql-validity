@@ -4,8 +4,8 @@ const graphqlHTTP = require('express-graphql');
 const {
     FieldValidationDefinitions,
     wrapResolvers,
-    wrapExtension
-} = require("graphql-validity");
+    graphQLValidityMiddleware
+} = require('../lib');
 
 const schema = require('./schema');
 
@@ -38,13 +38,14 @@ wrapResolvers(schema, {
     wrapErrors: true
 });
 
+app.use(graphQLValidityMiddleware);
+
 app.use('/graphql', graphqlHTTP((request) => {
     return {
         schema,
         graphiql: true,
         context: {},
-        rootValue: request,
-        extensions: wrapExtension(request)
+        rootValue: request
     }
 }));
 
