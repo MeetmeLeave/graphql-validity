@@ -18,17 +18,13 @@
   "bugs": {
     "url": "https://github.com/MeetmeLeave/graphql-validity/issues"
   },
-  "homepage": "https://github.com/MeetmeLeave/ng-canvas-gauges",
+  "homepage": "https://github.com/MeetmeLeave/graphql-validity",
   "author": "Vlad Martynenko <vladimir.martynenko.work@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@types/body-parser": "^1.16.5",
-    "@types/express-graphql": "0.0.33",
     "@types/graphql": "^0.10.2",
-    "@types/graphql-relay": "^0.4.2",
     "@types/node": "^8.0.25",
     "graphql": "^0.10.5",
-    "graphql-relay": "^0.5.2",
     "typescript": "^2.5.1"
   }
 }
