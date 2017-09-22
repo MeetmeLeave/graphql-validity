@@ -12,6 +12,6 @@
     "express": "^4.15.4",
     "express-graphql": "^0.6.11",
     "graphql": "^0.10.5",
-    "graphql-validity": "^0.5.0"
+    "graphql-validity": "^0.5.2"
   }
 }
