@@ -38,22 +38,26 @@ function onUnhandledError(error: Error) {
  * @returns {Function} - returns function for the extension variable
  * which adds additional changes to the result object.
  */
-export function wrapExtension(request): Function {
+export function wrapExtension(request: any): Function {
     if (request) {
-        request.___validationResults = [];
-        request.___globalValidationResults;
+        request.__graphQLValidity = {
+            ___validationResults: [],
+            ___globalValidationResults: undefined
+        };
 
         return function ({ result }: any) {
-            let globalValidationResults = request.___globalValidationResults
+            const validity = request.__graphQLValidity;
+            let globalValidationResults = validity.___globalValidationResults
                 || [];
             result.errors =
                 (result.errors || [])
                     .concat(
-                        request.___validationResults.map(error => {
-                            return {
-                                message: error.message
-                            };
-                        })
+                        validity.___validationResults.map(
+                            error => {
+                                return {
+                                    message: error.message
+                                };
+                            })
                     )
                     .concat(
                         globalValidationResults.map(error => {
@@ -70,6 +74,64 @@ export function wrapExtension(request): Function {
         return function (...args: any[]) {
             return null;
         }
+    }
+}
+
+/**
+ * Middleware which will capture validation output and will add it to the original response
+ *
+ * @param req - express request
+ * @param res - express response
+ * @param next - next call
+ */
+export function graphQLValidityMiddleware(req: any, res: any, next: any) {
+    try {
+        let originalSend = res.send;
+        req.__graphQLValidity = {
+            ___validationResults: [],
+            ___globalValidationResults: undefined
+        };
+
+        res.send = function (data: any) {
+            try {
+                let result = JSON.parse(data);
+                const validity = req.__graphQLValidity;
+                if (result.data) {
+                    let globalValidationResults = validity.___globalValidationResults
+                        || [];
+                    result.errors =
+                        (result.errors || [])
+                            .concat(
+                                validity.___validationResults.map(
+                                    error => {
+                                        return {
+                                            message: error.message
+                                        };
+                                    })
+                            )
+                            .concat(
+                                globalValidationResults.map(error => {
+                                    return {
+                                        message: error.message
+                                    };
+                                })
+                            );
+                    arguments[0] = JSON.stringify(result);
+                }
+            }
+            catch (err) {
+                console.error(err)
+            }
+            finally {
+                originalSend.apply(res, Array.from(arguments));
+            }
+        }
+    }
+    catch (err) {
+        console.error(err)
+    }
+    finally {
+        next();
     }
 }
 
@@ -127,7 +189,7 @@ function wrapField(
         try {
             let request;
             for (let arg of [...args]) {
-                if (arg && arg.___validationResults) {
+                if (arg && arg.__graphQLValidity) {
                     request = arg;
                     break;
                 }
@@ -145,8 +207,9 @@ function wrapField(
                 } = getValidators(field, parentTypeName);
 
                 if (!globalValidationResults) {
-                    request.___globalValidationResults = [];
-                    globalValidationResults = request.___globalValidationResults;
+                    const validity = request.__graphQLValidity;
+                    validity.___globalValidationResults = [];
+                    globalValidationResults = validity.___globalValidationResults;
                     for (let validator of globalValidators) {
                         Array.prototype.push.apply(
                             globalValidationResults,
@@ -182,14 +245,14 @@ function wrapField(
  * list of validation result messages for both local and global validators
  */
 function getValidationResults(request: any) {
-    let validationResults = request.___validationResults;
+    let validationResults = request.__graphQLValidity.___validationResults;
 
     if (!validationResults) {
-        request.___validationResults = [];
-        validationResults = request.___validationResults;
+        request.__graphQLValidity.___validationResults = [];
+        validationResults = request.__graphQLValidity.___validationResults;
     }
 
-    let globalValidationResults = request.___globalValidationResults;
+    let globalValidationResults = request.__graphQLValidity.___globalValidationResults;
 
     return {
         validationResults,
