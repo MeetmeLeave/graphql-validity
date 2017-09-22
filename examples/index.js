@@ -20,7 +20,7 @@ function applyToAll(...args) {
 }
 
 function applyGlobally(...args) {
-    return [new Error('Global failed!')];
+    return [new Error('Global failure!')];
 }
 
 function validateSomeTestMutation(...args) {

@@ -32,6 +32,7 @@ function onUnhandledError(error: Error) {
 }
 
 /**
+ * DEPRECATED!!!
  * Must be used to wrap the extension variable on the graphqlHTTP object
  *
  * @param request - http request object, from the express middleware.
