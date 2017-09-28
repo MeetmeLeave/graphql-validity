@@ -38,36 +38,6 @@ let profilingResultHandler = (profilingResult: any) => {
 };
 
 /**
- * DEPRECATED!!!
- * Must be used to wrap the extension variable on the graphqlHTTP object
- *
- * @param request - http request object, from the express middleware.
- * @returns {Function} - returns function for the extension variable
- * which adds additional changes to the result object.
- */
-export function wrapExtension(request: any): Function {
-    if (request) {
-        request.__graphQLValidity = {
-            ___validationResults: [],
-            ___globalValidationResults: undefined,
-            ___profilingData: []
-        };
-
-        return function ({ result }: any) {
-            const validity = request.__graphQLValidity;
-            getResponseValidationResults(validity, result);
-
-            return null;
-        }
-    }
-    else {
-        return function (...args: any[]) {
-            return null;
-        }
-    }
-}
-
-/**
  * Middleware which will capture validation output and will add it to the original response
  *
  * @param req - express request
