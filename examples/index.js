@@ -45,7 +45,11 @@ FieldValidationDefinitions['TestType2:third'] = [specialThird];
 
 wrapResolvers(schema, {
     wrapErrors: true,
-    enableProfiling: true
+    enableProfiling: true,
+    profilingResultHandler: (profilingResult) => {
+        console.log('TEST!')
+        console.log(JSON.stringify(profilingResult, null, 2));
+    }
 });
 
 app.use(graphQLValidityMiddleware);

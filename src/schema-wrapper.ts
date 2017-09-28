@@ -7,7 +7,8 @@ import { uuid } from './uuid';
 export declare type ValidityConfig = {
     wrapErrors: boolean;
     enableProfiling: boolean;
-    unhandledErrorWrapper?: Function;
+    unhandledErrorWrapper?: (error: Error) => Error;
+    profilingResultHandler?: (profilingResult: any) => void;
 }
 
 // Indicates whether schema entity was already processed
@@ -31,6 +32,11 @@ function onUnhandledError(error: Error) {
     return new Error(`An internal error occured, with following id:${id}, please contact Administrator!`)
 }
 
+// The default profiling result display
+let profilingResultHandler = (profilingResult: any) => {
+    console.log(JSON.stringify(profilingResult, null, 2));
+};
+
 /**
  * DEPRECATED!!!
  * Must be used to wrap the extension variable on the graphqlHTTP object
@@ -42,9 +48,9 @@ function onUnhandledError(error: Error) {
 export function wrapExtension(request: any): Function {
     if (request) {
         request.__graphQLValidity = {
-            ___profilingInfo: {},
             ___validationResults: [],
-            ___globalValidationResults: undefined
+            ___globalValidationResults: undefined,
+            ___profilingData: []
         };
 
         return function ({ result }: any) {
@@ -74,7 +80,7 @@ export function graphQLValidityMiddleware(req: any, res: any, next: any) {
         req.__graphQLValidity = {
             ___validationResults: [],
             ___globalValidationResults: undefined,
-            ___profilingInfo: {}
+            ___profilingData: []
         };
 
         res.send = function (data: any) {
@@ -86,6 +92,23 @@ export function graphQLValidityMiddleware(req: any, res: any, next: any) {
                     getResponseValidationResults(validity, result);
                     arguments[0] = JSON.stringify(result);
                 }
+
+                setTimeout(() => {
+                    const profilingData = validity.___profilingData;
+                    if (profilingData.length) {
+                        const processedResult = {};
+                        for (let i = 0; i < profilingData.length; i++) {
+                            let profilingResult = profilingData[i];
+                            addProfilingResult(
+                                processedResult,
+                                profilingResult.path,
+                                profilingResult.profile
+                            );
+                        }
+
+                        profilingResultHandler(processedResult);
+                    }
+                }, 1000);
             }
             catch (err) {
                 console.error(err)
@@ -149,6 +172,11 @@ export function wrapResolvers(entity: any, config?: ValidityConfig) {
     else {
         config.unhandledErrorWrapper = config.unhandledErrorWrapper
             || onUnhandledError;
+
+        if (config.profilingResultHandler) {
+            profilingResultHandler = config.profilingResultHandler ?
+                config.profilingResultHandler : profilingResultHandler;
+        }
     }
 
     if (entity.constructor.name === 'GraphQLSchema') {
@@ -232,7 +260,7 @@ function wrapField(
 
             try {
                 if (validity && config.enableProfiling) {
-                    addProfilingResult(validity, ast.path, {
+                    storeProfilingInfo(validity, ast.path, {
                         validation: (vet - pst),
                         execution: (eet - vet)
                     });
@@ -255,16 +283,28 @@ function wrapField(
 }
 
 /**
- * Build profiling information for each resolver executed
+ * Capture profiling info for later processing
  *
- * @param validity - object stored inside the request with profiling info
+ * @param validity - object which stores profiling info
  * @param path - AST path to the field and its resolver
  * @param profile - profiling info collected
  */
-function addProfilingResult(validity: any, path: any, profile: any) {
+function storeProfilingInfo(validity: any, path: any, profile: any) {
+    validity.___profilingData.push({ path, profile });
+}
+
+
+/**
+ * Build profiling information for each resolver executed
+ *
+ * @param root - object which stores profiling info
+ * @param path - AST path to the field and its resolver
+ * @param profile - profiling info collected
+ */
+function addProfilingResult(root: any, path: any, profile: any) {
     let result: any = {};
     result.profile = profile;
-    let parent = validity.___profilingInfo;
+    let parent = root;
 
     if (path.prev) {
         let traversedPath = traversePath(path, null);
