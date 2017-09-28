@@ -6,8 +6,8 @@ import { uuid } from './uuid';
  */
 export declare type ValidityConfig = {
     wrapErrors: boolean;
+    enableProfiling: boolean;
     unhandledErrorWrapper?: Function;
-    parentTypeName?: string;
 }
 
 // Indicates whether schema entity was already processed
@@ -42,6 +42,7 @@ function onUnhandledError(error: Error) {
 export function wrapExtension(request: any): Function {
     if (request) {
         request.__graphQLValidity = {
+            ___profilingInfo: {},
             ___validationResults: [],
             ___globalValidationResults: undefined
         };
@@ -72,7 +73,8 @@ export function graphQLValidityMiddleware(req: any, res: any, next: any) {
         let originalSend = res.send;
         req.__graphQLValidity = {
             ___validationResults: [],
-            ___globalValidationResults: undefined
+            ___globalValidationResults: undefined,
+            ___profilingInfo: {}
         };
 
         res.send = function (data: any) {
@@ -140,15 +142,13 @@ export function wrapResolvers(entity: any, config?: ValidityConfig) {
     if (!config) {
         config = {
             wrapErrors: false,
-            unhandledErrorWrapper: onUnhandledError,
-            parentTypeName: ''
+            enableProfiling: false,
+            unhandledErrorWrapper: onUnhandledError
         }
     }
     else {
         config.unhandledErrorWrapper = config.unhandledErrorWrapper
             || onUnhandledError;
-        config.parentTypeName = config.parentTypeName
-            || '';
     }
 
     if (entity.constructor.name === 'GraphQLSchema') {
@@ -168,11 +168,8 @@ export function wrapResolvers(entity: any, config?: ValidityConfig) {
  */
 function wrapField(
     field: any,
-    config: ValidityConfig,
-    parentTypeName?: string
+    config: ValidityConfig
 ) {
-    parentTypeName = parentTypeName || config.parentTypeName;
-
     const resolve = field.resolve;
     if (field[Processed] || !resolve) {
         return;
@@ -181,19 +178,27 @@ function wrapField(
     field[Processed] = true;
     field.resolve = async function (...args: any[]) {
         try {
-            let request;
+            // profiling start time
+            var pst = Date.now();
+            let parentTypeName;
+            let ast;
+            let validity;
             for (let arg of [...args]) {
-                if (arg && arg.__graphQLValidity) {
-                    request = arg;
-                    break;
+                if (arg && arg.rootValue && arg.rootValue.__graphQLValidity) {
+                    validity = arg.rootValue.__graphQLValidity;
+                }
+
+                if (arg && arg.parentType) {
+                    ast = arg;
+                    parentTypeName = arg.parentType;
                 }
             }
 
-            if (request) {
+            if (validity) {
                 let {
                     validationResults,
                     globalValidationResults
-                } = getValidationResults(request);
+                } = getValidationResults(validity);
 
                 let {
                     validators,
@@ -201,7 +206,6 @@ function wrapField(
                 } = getValidators(field, parentTypeName);
 
                 if (!globalValidationResults) {
-                    const validity = request.__graphQLValidity;
                     validity.___globalValidationResults = [];
                     globalValidationResults = validity.___globalValidationResults;
                     for (let validator of globalValidators) {
@@ -220,7 +224,26 @@ function wrapField(
                 }
             }
 
-            return await resolve.call(this, ...args);
+            // validation end time
+            const vet = Date.now();
+            let result = await resolve.call(this, ...args);
+            // execution end time
+            const eet = Date.now();
+
+            try {
+                if (validity && config.enableProfiling) {
+                    addProfilingResult(validity, ast.path, {
+                        validation: (vet - pst),
+                        execution: (eet - vet)
+                    });
+                }
+            }
+            catch (err) {
+                console.error('Profiling failed!', err);
+            }
+
+            // console.log(parentTypeName + ':' + field.name + ". Validation (ms): " + (vet - pst) + ". Execution (ms): " + (eet - vet));
+            return result;
         } catch (e) {
             if (config.wrapErrors) {
                 throw config.unhandledErrorWrapper(e);
@@ -232,21 +255,77 @@ function wrapField(
 }
 
 /**
+ * Build profiling information for each resolver executed
+ *
+ * @param validity - object stored inside the request with profiling info
+ * @param path - AST path to the field and its resolver
+ * @param profile - profiling info collected
+ */
+function addProfilingResult(validity: any, path: any, profile: any) {
+    let result: any = {};
+    result.profile = profile;
+    let parent = validity.___profilingInfo;
+
+    if (path.prev) {
+        let traversedPath = traversePath(path, null);
+        parent = addNewNode(parent, traversedPath);
+    }
+
+    Object.defineProperty(parent, path.key, {
+        enumerable: true,
+        writable: true,
+        value: result
+    });
+}
+
+/**
+ * Reversing of AST path to the field
+ *
+ * @param path - original path
+ * @param child - previous value
+ * @returns {any} - reversed tree
+ */
+function traversePath(path: any, child: any) {
+    let obj = { key: path.key, child };
+
+    if (!path.prev) {
+        return obj;
+    }
+
+    return traversePath(path.prev, obj);
+}
+
+/**
+ * Find node for the bottom elemenent of the traversed path
+ *
+ * @param profilingInfo - profiling tree
+ * @param traversedPath - traversed AST tree path
+ * @returns {any} - node for the current field
+ */
+function addNewNode(profilingInfo: any, traversedPath: any) {
+    if (!traversedPath.child) {
+        return profilingInfo;
+    }
+
+    return addNewNode(profilingInfo[traversedPath.key], traversedPath.child);
+}
+
+/**
  * Returns lists of graphql validation messages arrays from request object
  *
  * @param request - express request object
  * @returns {{validationResults: any; globalValidationResults: any}} -
  * list of validation result messages for both local and global validators
  */
-function getValidationResults(request: any) {
-    let validationResults = request.__graphQLValidity.___validationResults;
+function getValidationResults(validity: any) {
+    let validationResults = validity.___validationResults;
 
     if (!validationResults) {
-        request.__graphQLValidity.___validationResults = [];
-        validationResults = request.__graphQLValidity.___validationResults;
+        validity.___validationResults = [];
+        validationResults = validity.___validationResults;
     }
 
-    let globalValidationResults = request.__graphQLValidity.___globalValidationResults;
+    let globalValidationResults = validity.___globalValidationResults;
 
     return {
         validationResults,
@@ -256,6 +335,7 @@ function getValidationResults(request: any) {
 
 /**
  * Return list of local and global validators
+ *
  * @param field - field which will be validated
  * @param {string} parentTypeName - name of the parent object where field belongs to
  * @returns {{validators: T[]; globalValidators: (any | Array)}}
@@ -301,7 +381,7 @@ function wrapType(type: GraphQLObjectType, config: ValidityConfig) {
             continue;
         }
 
-        wrapField(fields[fieldName], config, type.name);
+        wrapField(fields[fieldName], config);
     }
 }
 
