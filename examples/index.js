@@ -27,15 +27,25 @@ function validateSomeTestMutation(...args) {
     return [new Error('testMutation failed!')];
 }
 
+function specialThird(...args) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve([new Error('Special third failed!')]);
+        }, 2000)
+    });
+}
+
 FieldValidationDefinitions['$'] = [applyGlobally];
-FieldValidationDefinitions['*'] = [applyToAll];
+// FieldValidationDefinitions['*'] = [applyToAll];
 FieldValidationDefinitions['Mutation:testMutation'] = [validateSomeTestMutation];
 FieldValidationDefinitions['TestType'] = [validateSomeTestThing];
-FieldValidationDefinitions['TestType:first'] = [validateSomeTestThing];
-FieldValidationDefinitions['TestType:second'] = [validateSomeTestThing];
+FieldValidationDefinitions['TestType2:first'] = [validateSomeTestThing];
+FieldValidationDefinitions['TestType2:second'] = [validateSomeTestThing];
+FieldValidationDefinitions['TestType2:third'] = [specialThird];
 
 wrapResolvers(schema, {
-    wrapErrors: true
+    wrapErrors: true,
+    enableProfiling: true
 });
 
 app.use(graphQLValidityMiddleware);
@@ -44,7 +54,6 @@ app.use('/graphql', graphqlHTTP((request) => {
     return {
         schema,
         graphiql: true,
-        context: {},
         rootValue: request
     }
 }));

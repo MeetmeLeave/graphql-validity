@@ -7,6 +7,24 @@ const {
 const TestType = new GraphQLObjectType({
     name: 'TestType',
     fields: {
+        fourth: {
+            type: GraphQLString,
+            resolve(obj) {
+                return obj.first;
+            }
+        },
+        fifth: {
+            type: GraphQLString,
+            resolve(obj) {
+                return obj.second;
+            }
+        }
+    }
+});
+
+const TestType2 = new GraphQLObjectType({
+    name: 'TestType2',
+    fields: {
         first: {
             type: GraphQLString,
             resolve(obj) {
@@ -18,6 +36,15 @@ const TestType = new GraphQLObjectType({
             resolve(obj) {
                 return obj.second;
             }
+        },
+        third: {
+            type: TestType,
+            resolve(obj) {
+                return {
+                    first: 'sdljfl',
+                    second: 'ssdf'
+                };
+            }
         }
     }
 });
@@ -27,12 +54,16 @@ const schema = new GraphQLSchema({
         name: 'RootQueryType',
         fields: {
             hello: {
-                type: TestType,
+                type: TestType2,
                 resolve() {
-                    return {
-                        first: 'lala',
-                        second: 'I HAVE AN ERROR',
-                    }
+                    return new Promise((resolve, reject) => {
+                        setTimeout(() => {
+                            resolve({
+                                first: 'lalalal',
+                                second: 'I Have An Error'
+                            });
+                        }, 3000)
+                    });
                 }
             }
         }
@@ -48,10 +79,14 @@ const schema = new GraphQLSchema({
                     }
                 },
                 resolve() {
-                    return {
-                        first: 'dsfs',
-                        second: 'dsfsdf'
-                    }
+                    return new Promise((resolve, reject) => {
+                        setTimeout(() => {
+                            resolve({
+                                first: 'dsfs',
+                                second: 'dsfsdf'
+                            });
+                        }, 2000)
+                    });
                 }
             }
         }
