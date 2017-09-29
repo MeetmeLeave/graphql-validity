@@ -256,7 +256,9 @@ function wrapField(
                 if (validity && config.enableProfiling) {
                     storeProfilingInfo(validity, ast.path, {
                         validation: (vet - pst),
-                        execution: (eet - vet)
+                        totalValidation: (vet - pst),
+                        execution: (eet - vet),
+                        totalExecution: (eet - vet)
                     });
                 }
             }
@@ -302,7 +304,7 @@ function addProfilingResult(root: any, path: any, profile: any) {
 
     if (path.prev) {
         let traversedPath = traversePath(path, null);
-        parent = addNewNode(parent, traversedPath);
+        parent = addNewNode(parent, traversedPath, profile);
     }
 
     Object.defineProperty(parent, path.key, {
@@ -336,12 +338,16 @@ function traversePath(path: any, child: any) {
  * @param traversedPath - traversed AST tree path
  * @returns {any} - node for the current field
  */
-function addNewNode(profilingInfo: any, traversedPath: any) {
+function addNewNode(profilingInfo: any, traversedPath: any, profile:any) {
     if (!traversedPath.child) {
         return profilingInfo;
     }
 
-    return addNewNode(profilingInfo[traversedPath.key], traversedPath.child);
+    let parentProfile = profilingInfo[traversedPath.key].profile;
+    parentProfile.totalValidation += profile.validation;
+    parentProfile.totalExecution += profile.execution;
+
+    return addNewNode(profilingInfo[traversedPath.key], traversedPath.child, profile);
 }
 
 /**
