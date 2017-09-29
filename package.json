@@ -23,8 +23,8 @@
   "license": "MIT",
   "dependencies": {
     "@types/graphql": "^0.10.2",
-    "@types/node": "^8.0.25",
+    "@types/node": "^8.0.31",
     "graphql": "^0.10.5",
-    "typescript": "^2.5.1"
+    "typescript": "^2.5.3"
   }
 }
