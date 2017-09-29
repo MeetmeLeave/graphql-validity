@@ -5,14 +5,18 @@ const {
     FieldValidationDefinitions,
     wrapResolvers,
     graphQLValidityMiddleware
-} = require('graphql-validity');
+} = require('../lib');
 
 const schema = require('./schema');
 
 const app = express();
 
 function validateSomeTestThing(...args) {
-    return [new Error('Wrong stuff here!')];
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve([new Error('Wrong stuff here!')]);
+        }, 130)
+    });
 }
 
 function applyToAll(...args) {
@@ -31,7 +35,7 @@ function specialThird(...args) {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
             resolve([new Error('Special third failed!')]);
-        }, 2000)
+        }, 250)
     });
 }
 
@@ -39,6 +43,8 @@ FieldValidationDefinitions['$'] = [applyGlobally];
 // FieldValidationDefinitions['*'] = [applyToAll];
 FieldValidationDefinitions['Mutation:testMutation'] = [validateSomeTestMutation];
 FieldValidationDefinitions['TestType'] = [validateSomeTestThing];
+FieldValidationDefinitions['TestType:fourth'] = [validateSomeTestThing];
+FieldValidationDefinitions['TestType:fifth'] = [validateSomeTestThing];
 FieldValidationDefinitions['TestType2:first'] = [validateSomeTestThing];
 FieldValidationDefinitions['TestType2:second'] = [validateSomeTestThing];
 FieldValidationDefinitions['TestType2:third'] = [specialThird];
