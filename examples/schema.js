@@ -1,7 +1,8 @@
 const {
     GraphQLSchema,
     GraphQLObjectType,
-    GraphQLString
+    GraphQLString,
+    GraphQLList
 } = require('graphql');
 
 const TestType = new GraphQLObjectType({
@@ -38,12 +39,18 @@ const TestType2 = new GraphQLObjectType({
             }
         },
         third: {
-            type: TestType,
+            type: new GraphQLList(TestType),
             resolve(obj) {
-                return {
+                return [{
                     first: 'sdljfl',
                     second: 'ssdf'
-                };
+                }, {
+                    first: '2',
+                    second: '2'
+                }, {
+                    first: '3',
+                    second: '3'
+                }];
             }
         }
     }
