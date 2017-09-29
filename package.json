@@ -1,6 +1,6 @@
 {
   "name": "graphql-validity",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "description": "Make business logic validation easy on the graphql side without adding any declarations or modifications to the existing graphql schema.",
   "main": "lib/index.js",
   "scripts": {
