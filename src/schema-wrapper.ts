@@ -255,10 +255,11 @@ function wrapField(
             try {
                 if (validity && config.enableProfiling) {
                     storeProfilingInfo(validity, ast.path, {
+                        name: field.name,
                         validation: (vet - pst),
                         totalValidation: (vet - pst),
-                        execution: (eet - vet),
-                        totalExecution: (eet - vet)
+                        execution: (eet - pst),
+                        totalExecution: (eet - pst)
                     });
                 }
             }
@@ -266,7 +267,6 @@ function wrapField(
                 console.error('Profiling failed!', err);
             }
 
-            // console.log(parentTypeName + ':' + field.name + ". Validation (ms): " + (vet - pst) + ". Execution (ms): " + (eet - vet));
             return result;
         } catch (e) {
             if (config.wrapErrors) {
@@ -338,9 +338,21 @@ function traversePath(path: any, child: any) {
  * @param traversedPath - traversed AST tree path
  * @returns {any} - node for the current field
  */
-function addNewNode(profilingInfo: any, traversedPath: any, profile:any) {
+function addNewNode(profilingInfo: any, traversedPath: any, profile: any) {
     if (!traversedPath.child) {
         return profilingInfo;
+    }
+
+    if (!profilingInfo[traversedPath.key]) {
+        profilingInfo[traversedPath.key] = {
+            profile: {
+                name: traversedPath.key,
+                validation: 0,
+                totalValidation: 0,
+                execution: 0,
+                totalExecution: 0
+            }
+        };
     }
 
     let parentProfile = profilingInfo[traversedPath.key].profile;
