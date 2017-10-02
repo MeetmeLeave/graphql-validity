@@ -40,7 +40,6 @@ function specialThird(...args) {
 }
 
 FieldValidationDefinitions['$'] = [applyGlobally];
-// FieldValidationDefinitions['*'] = [applyToAll];
 FieldValidationDefinitions['Mutation:testMutation'] = [validateSomeTestMutation];
 FieldValidationDefinitions['TestType'] = [validateSomeTestThing];
 FieldValidationDefinitions['TestType:fourth'] = [validateSomeTestThing];
@@ -52,9 +51,8 @@ FieldValidationDefinitions['TestType2:third'] = [specialThird];
 wrapResolvers(schema, {
     wrapErrors: true,
     enableProfiling: true,
-    profilingResultHandler: (profilingResult) => {
-        // console.log(JSON.stringify(Array.from(Object.keys(profilingResult)).map(o=>profilingResult[o].profile), null, 2));
-        console.log(JSON.stringify(profilingResult, null, 2));
+    profilingResultHandler: (profilingData) => {
+        console.log(JSON.stringify(profilingData, null, 2));
     }
 });
 
