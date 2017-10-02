@@ -89,19 +89,7 @@ export function graphQLValidityMiddleware(req: any, res: any, next: any) {
 
                 setTimeout(() => {
                     const profilingData = validity.___profilingData;
-                    if (profilingData.length) {
-                        const processedResult = {};
-                        for (let i = 0; i < profilingData.length; i++) {
-                            let profilingResult = profilingData[i];
-                            addProfilingResult(
-                                processedResult,
-                                profilingResult.path,
-                                profilingResult.profile
-                            );
-                        }
-
-                        profilingResultHandler(processedResult);
-                    }
+                    profilingResultHandler(profilingData);
                 }, 1000);
             }
             catch (err) {
@@ -287,90 +275,6 @@ function wrapField(
  */
 function storeProfilingInfo(validity: any, path: any, profile: any) {
     validity.___profilingData.push({ path, profile });
-}
-
-
-/**
- * Build profiling information for each resolver executed
- *
- * @param root - object which stores profiling info
- * @param path - AST path to the field and its resolver
- * @param profile - profiling info collected
- */
-function addProfilingResult(root: any, path: any, profile: any) {
-    if (path.prev) {
-        let traversedPath = traversePath(path, null, profile);
-        root = addNewNode(root, traversedPath, profile);
-    }
-
-    Object.defineProperty(root, path.key, {
-        enumerable: true,
-        writable: true,
-        value: { profile }
-    });
-}
-
-/**
- * Reversing of AST path to the field
- *
- * @param path - original path
- * @param child - previous value
- * @returns {any} - reversed tree
- */
-function traversePath(path: any, child: any, profile: any) {
-    let obj: any = { key: path.key, child };
-
-    if (!child) {
-        obj.profile = profile;
-    }
-    else {
-        obj.profile = {
-            name: path.key,
-            validation: 0,
-            execution: 0,
-            fieldsExecution: profile.totalExecution,
-            totalExecution: 0
-        };
-    }
-
-    if (!path.prev) {
-        return obj;
-    }
-
-    return traversePath(path.prev, obj, profile);
-}
-
-/**
- * Find node for the bottom elemenent of the traversed path
- *
- * @param parentNode - profiling tree
- * @param traversedPath - traversed AST tree path
- * @returns {any} - node for the current field
- */
-function addNewNode(parentNode: any, traversedPath: any, profile: any) {
-    if (!traversedPath.child) {
-        return parentNode;
-    }
-
-    if (!parentNode[traversedPath.key]) {
-        parentNode[traversedPath.key] = {
-            profile: {
-                name: traversedPath.key,
-                validation: 0,
-                execution: 0,
-                fieldsExecution: 0,
-                totalExecution: 0
-            }
-        };
-    }
-
-    let parentProfile = parentNode[traversedPath.key].profile;
-    if (parentProfile.fieldsExecution < profile.totalExecution) {
-        parentProfile.fieldsExecution = profile.totalExecution;
-        parentProfile.totalExecution = parentProfile.execution - parentProfile.validation + parentProfile.fieldsExecution
-    }
-
-    return addNewNode(parentNode[traversedPath.key], traversedPath.child, profile);
 }
 
 /**
