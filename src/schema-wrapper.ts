@@ -57,8 +57,10 @@ function onUnhandledError(error: Error) {
 }
 
 // The default profiling result display
-let profilingResultHandler = (profilingResult: any) => {
-    console.log(JSON.stringify(profilingResult, null, 2));
+let profilingResultHandler = (profilingData: any) => {
+    if (profilingData.length > 0) {
+        console.log(JSON.stringify(profilingData, null, 2));
+    }
 };
 
 /**
