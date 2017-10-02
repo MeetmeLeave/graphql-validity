@@ -53,7 +53,7 @@ wrapResolvers(schema, {
     wrapErrors: true,
     enableProfiling: true,
     profilingResultHandler: (profilingResult) => {
-        console.log('TEST!')
+        // console.log(JSON.stringify(Array.from(Object.keys(profilingResult)).map(o=>profilingResult[o].profile), null, 2));
         console.log(JSON.stringify(profilingResult, null, 2));
     }
 });

@@ -17,7 +17,11 @@ const TestType = new GraphQLObjectType({
         fifth: {
             type: GraphQLString,
             resolve(obj) {
-                return obj.second;
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve(obj.second);
+                    }, 400);
+                });
             }
         }
     }
@@ -41,16 +45,20 @@ const TestType2 = new GraphQLObjectType({
         third: {
             type: new GraphQLList(TestType),
             resolve(obj) {
-                return [{
-                    first: 'sdljfl',
-                    second: 'ssdf'
-                }, {
-                    first: '2',
-                    second: '2'
-                }, {
-                    first: '3',
-                    second: '3'
-                }];
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve([{
+                            first: 'sdljfl',
+                            second: 'ssdf'
+                        }, {
+                            first: '2',
+                            second: '2'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }]);
+                    }, 400);
+                });
             }
         }
     }
