@@ -257,9 +257,9 @@ function wrapField(
                     storeProfilingInfo(validity, ast.path, {
                         name: field.name,
                         validation: (vet - pst),
-                        totalValidation: (vet - pst),
                         execution: (eet - pst),
-                        totalExecution: (eet - pst)
+                        fieldsExecution: 0,
+                        totalExecution: (eet - pst) - (vet - pst)
                     });
                 }
             }
@@ -298,19 +298,15 @@ function storeProfilingInfo(validity: any, path: any, profile: any) {
  * @param profile - profiling info collected
  */
 function addProfilingResult(root: any, path: any, profile: any) {
-    let result: any = {};
-    result.profile = profile;
-    let parent = root;
-
     if (path.prev) {
-        let traversedPath = traversePath(path, null);
-        parent = addNewNode(parent, traversedPath, profile);
+        let traversedPath = traversePath(path, null, profile);
+        root = addNewNode(root, traversedPath, profile);
     }
 
-    Object.defineProperty(parent, path.key, {
+    Object.defineProperty(root, path.key, {
         enumerable: true,
         writable: true,
-        value: result
+        value: { profile }
     });
 }
 
@@ -321,45 +317,60 @@ function addProfilingResult(root: any, path: any, profile: any) {
  * @param child - previous value
  * @returns {any} - reversed tree
  */
-function traversePath(path: any, child: any) {
-    let obj = { key: path.key, child };
+function traversePath(path: any, child: any, profile: any) {
+    let obj: any = { key: path.key, child };
+
+    if (!child) {
+        obj.profile = profile;
+    }
+    else {
+        obj.profile = {
+            name: path.key,
+            validation: 0,
+            execution: 0,
+            fieldsExecution: profile.totalExecution,
+            totalExecution: 0
+        };
+    }
 
     if (!path.prev) {
         return obj;
     }
 
-    return traversePath(path.prev, obj);
+    return traversePath(path.prev, obj, profile);
 }
 
 /**
  * Find node for the bottom elemenent of the traversed path
  *
- * @param profilingInfo - profiling tree
+ * @param parentNode - profiling tree
  * @param traversedPath - traversed AST tree path
  * @returns {any} - node for the current field
  */
-function addNewNode(profilingInfo: any, traversedPath: any, profile: any) {
+function addNewNode(parentNode: any, traversedPath: any, profile: any) {
     if (!traversedPath.child) {
-        return profilingInfo;
+        return parentNode;
     }
 
-    if (!profilingInfo[traversedPath.key]) {
-        profilingInfo[traversedPath.key] = {
+    if (!parentNode[traversedPath.key]) {
+        parentNode[traversedPath.key] = {
             profile: {
                 name: traversedPath.key,
                 validation: 0,
-                totalValidation: 0,
                 execution: 0,
+                fieldsExecution: 0,
                 totalExecution: 0
             }
         };
     }
 
-    let parentProfile = profilingInfo[traversedPath.key].profile;
-    parentProfile.totalValidation += profile.validation;
-    parentProfile.totalExecution += profile.execution;
+    let parentProfile = parentNode[traversedPath.key].profile;
+    if (parentProfile.fieldsExecution < profile.totalExecution) {
+        parentProfile.fieldsExecution = profile.totalExecution;
+        parentProfile.totalExecution = parentProfile.execution - parentProfile.validation + parentProfile.fieldsExecution
+    }
 
-    return addNewNode(profilingInfo[traversedPath.key], traversedPath.child, profile);
+    return addNewNode(parentNode[traversedPath.key], traversedPath.child, profile);
 }
 
 /**
