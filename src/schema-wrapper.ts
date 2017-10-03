@@ -22,7 +22,6 @@
  * SOFTWARE.
  */
 
-import { GraphQLObjectType, GraphQLSchema } from "graphql";
 import { uuid } from './uuid';
 
 /**
@@ -339,7 +338,7 @@ function getValidators(field: any, parentTypeName: string) {
  * @param {GraphQLObjectType} type - GraphQLObject schema entity
  * @param {ValidityConfig} config - setup options for the wrapper function
  */
-function wrapType(type: GraphQLObjectType, config: ValidityConfig) {
+function wrapType(type: any, config: ValidityConfig) {
     if (type[Processed] || !type.getFields) {
         return;
     }
@@ -360,13 +359,13 @@ function wrapType(type: GraphQLObjectType, config: ValidityConfig) {
  * @param {GraphQLSchema} schema - schema object that must be wrapped
  * @param {ValidityConfig} config - setup options for the wrapper function
  */
-function wrapSchema(schema: GraphQLSchema, config: ValidityConfig) {
+function wrapSchema(schema: any, config: ValidityConfig) {
     const types = schema.getTypeMap();
     for (const typeName in types) {
         if (!Object.hasOwnProperty.call(types, typeName)) {
             continue;
         }
 
-        wrapType(<GraphQLObjectType>types[typeName], config);
+        wrapType(<any>types[typeName], config);
     }
 }

@@ -22,9 +22,7 @@
   "author": "Vlad Martynenko <vladimir.martynenko.work@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@types/graphql": "^0.10.2",
     "@types/node": "^8.0.31",
-    "graphql": "^0.10.5",
     "typescript": "^2.5.3"
   }
 }
