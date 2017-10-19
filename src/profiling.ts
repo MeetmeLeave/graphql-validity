@@ -22,5 +22,20 @@
  * SOFTWARE.
  */
 
-export * from './schema-wrapper';
-export { FieldValidationDefinitions } from './validation';
+// The default profiling result display
+export let defaultProfilingResultHandler = (profilingData: any) => {
+    if (profilingData.length > 0) {
+        console.log(JSON.stringify(profilingData, null, 2));
+    }
+};
+
+/**
+ * Capture profiling info for later processing
+ *
+ * @param validity - object which stores profiling info
+ * @param path - AST path to the field and its resolver
+ * @param profile - profiling info collected
+ */
+export function storeProfilingInfo(validity: any, path: any, profile: any) {
+    validity.___profilingData.push({ path, profile });
+}

@@ -22,5 +22,30 @@
  * SOFTWARE.
  */
 
-export * from './schema-wrapper';
-export { FieldValidationDefinitions } from './validation';
+import { uuid } from './uuid';
+
+// Config options for graphql-validity library
+export declare type ValidityConfig = {
+    // Allows to modify graphql error output to not show original error stack to the end user
+    wrapErrors: boolean;
+    // Enables profiling data output, to analyze the graphql performance
+    enableProfiling: boolean;
+    // Error wrapper function, which will modift error objects output
+    unhandledErrorWrapper?: (error: Error) => Error;
+    // Function which will recieve output, with profiling information for analysis
+    profilingResultHandler?: (profilingResult: any) => void;
+}
+
+/**
+ * Default error wrapper function to hide error info from end users
+ *
+ * @param {Error} error - unhandled error object
+ * @returns {Error} - error object with critical data hidden
+ */
+export function onUnhandledError(error: Error) {
+    const id = uuid();
+
+    console.error(`Unhandled error occured with id:${id}, stack:${error.stack}`);
+
+    return new Error(`An internal error occured, with following id:${id}, please contact Administrator!`)
+}

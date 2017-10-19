@@ -22,120 +22,26 @@
  * SOFTWARE.
  */
 
-import { uuid } from './uuid';
-
 /**
  * Contains configuration options for the main function
  */
-export declare type ValidityConfig = {
-    wrapErrors: boolean;
-    enableProfiling: boolean;
-    unhandledErrorWrapper?: (error: Error) => Error;
-    profilingResultHandler?: (profilingResult: any) => void;
-}
+import {
+    onUnhandledError,
+    ValidityConfig
+} from "./helpers";
+import {
+    defaultProfilingResultHandler,
+    storeProfilingInfo
+} from "./profiling";
+import {
+    getResponseValidationResults,
+    getValidationResults,
+    getValidators
+} from "./validation";
 
 // Indicates whether schema entity was already processed
 export const Processed = Symbol();
-
-/* An object which stores all validator functions
-    required to be executed during graphql request */
-export const FieldValidationDefinitions: any = {};
-
-/**
- * Default error wrapper function to hide error info from end users
- *
- * @param {Error} error - unhandled error object
- * @returns {Error} - error object with critical data hidden
- */
-function onUnhandledError(error: Error) {
-    const id = uuid();
-
-    console.error(`Unhandled error occured with id:${id}, stack:${error.stack}`);
-
-    return new Error(`An internal error occured, with following id:${id}, please contact Administrator!`)
-}
-
-// The default profiling result display
-let profilingResultHandler = (profilingData: any) => {
-    if (profilingData.length > 0) {
-        console.log(JSON.stringify(profilingData, null, 2));
-    }
-};
-
-/**
- * Middleware which will capture validation output and will add it to the original response
- *
- * @param req - express request
- * @param res - express response
- * @param next - next call
- */
-export function graphQLValidityMiddleware(req: any, res: any, next: any) {
-    try {
-        let originalSend = res.send;
-        req.__graphQLValidity = {
-            ___validationResults: [],
-            ___globalValidationResults: undefined,
-            ___profilingData: []
-        };
-
-        res.send = function (data: any) {
-            try {
-                let result = JSON.parse(data);
-                const validity = req.__graphQLValidity;
-
-                if (result.data) {
-                    getResponseValidationResults(validity, result);
-                    arguments[0] = JSON.stringify(result);
-                }
-
-                setTimeout(() => {
-                    const profilingData = validity.___profilingData;
-                    profilingResultHandler(profilingData);
-                }, 1000);
-            }
-            catch (err) {
-                console.error(err)
-            }
-            finally {
-                originalSend.apply(res, Array.from(arguments));
-            }
-        }
-    }
-    catch (err) {
-        console.error(err)
-    }
-    finally {
-        next();
-    }
-}
-
-/**
- * Builds errors array, using validation and global validation results
- *
- * @param validity - an object injected to request at the beginning of the http call
- * @param data - result of graphql call
- */
-function getResponseValidationResults(validity: any, data: any) {
-    let globalValidationResults = validity.___globalValidationResults
-        || [];
-    data.errors =
-        (data.errors || [])
-            .concat(
-                validity.___validationResults.map(
-                    error => {
-                        return {
-                            message: error.message
-                        };
-                    })
-            )
-            .concat(
-                globalValidationResults.map(error => {
-                    return {
-                        message: error.message
-                    };
-                })
-            );
-}
+let profilingResultHandler = defaultProfilingResultHandler;
 
 /**
  * Top level wrapper for the GraphQL schema entities
@@ -268,71 +174,6 @@ function wrapField(
 }
 
 /**
- * Capture profiling info for later processing
- *
- * @param validity - object which stores profiling info
- * @param path - AST path to the field and its resolver
- * @param profile - profiling info collected
- */
-function storeProfilingInfo(validity: any, path: any, profile: any) {
-    validity.___profilingData.push({ path, profile });
-}
-
-/**
- * Returns lists of graphql validation messages arrays from request object
- *
- * @param request - express request object
- * @returns {{validationResults: any; globalValidationResults: any}} -
- * list of validation result messages for both local and global validators
- */
-function getValidationResults(validity: any) {
-    let validationResults = validity.___validationResults;
-
-    if (!validationResults) {
-        validity.___validationResults = [];
-        validationResults = validity.___validationResults;
-    }
-
-    let globalValidationResults = validity.___globalValidationResults;
-
-    return {
-        validationResults,
-        globalValidationResults
-    }
-}
-
-/**
- * Return list of local and global validators
- *
- * @param field - field which will be validated
- * @param {string} parentTypeName - name of the parent object where field belongs to
- * @returns {{validators: T[]; globalValidators: (any | Array)}}
- * - list of local and global validator functions
- */
-function getValidators(field: any, parentTypeName: string) {
-    let validators =
-        (
-            FieldValidationDefinitions['*']
-            || []
-        ).concat
-        (
-            FieldValidationDefinitions[field.type]
-            || []
-        ).concat
-        (
-            FieldValidationDefinitions[parentTypeName + ':' + field.name]
-            || []
-        )
-
-    let globalValidators = FieldValidationDefinitions['$'] || [];
-
-    return {
-        validators,
-        globalValidators
-    }
-}
-
-/**
  * Wraps each field of the GraphQLObjectType entity
  *
  * @param {GraphQLObjectType} type - GraphQLObject schema entity
@@ -367,5 +208,52 @@ function wrapSchema(schema: any, config: ValidityConfig) {
         }
 
         wrapType(<any>types[typeName], config);
+    }
+}
+
+/**
+ * Middleware which will capture validation output and will add it to the original response
+ *
+ * @param req - express request
+ * @param res - express response
+ * @param next - next call
+ */
+export function graphQLValidityExpressMiddleware(req: any, res: any, next: any) {
+    try {
+        let originalSend = res.send;
+        req.__graphQLValidity = {
+            ___validationResults: [],
+            ___globalValidationResults: undefined,
+            ___profilingData: []
+        };
+
+        res.send = function (data: any) {
+            try {
+                let result = JSON.parse(data);
+                const validity = req.__graphQLValidity;
+
+                if (result.data) {
+                    getResponseValidationResults(validity, result);
+                    arguments[0] = JSON.stringify(result);
+                }
+
+                setTimeout(() => {
+                    const profilingData = validity.___profilingData;
+                    profilingResultHandler(profilingData);
+                }, 1000);
+            }
+            catch (err) {
+                console.error(err)
+            }
+            finally {
+                originalSend.apply(res, Array.from(arguments));
+            }
+        }
+    }
+    catch (err) {
+        console.error(err)
+    }
+    finally {
+        next();
     }
 }
