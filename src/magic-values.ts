@@ -1,0 +1,1 @@
+export const PROFILING_DEBOUNCE_TIME = 1000;

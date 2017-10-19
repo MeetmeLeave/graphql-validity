@@ -34,6 +34,7 @@ import {
     storeProfilingInfo
 } from "./profiling";
 import {
+    applyValidation,
     getResponseValidationResults,
     getValidationResults,
     getValidators
@@ -218,29 +219,40 @@ function wrapSchema(schema: any, config: ValidityConfig) {
  * @param res - express response
  * @param next - next call
  */
-export function graphQLValidityExpressMiddleware(req: any, res: any, next: any) {
+export function graphQLValidityExpressMiddleware(
+    req: any,
+    res: any,
+    next: any
+) {
     try {
         let originalSend = res.send;
+        let originalWrite = res.write;
         req.__graphQLValidity = {
             ___validationResults: [],
             ___globalValidationResults: undefined,
             ___profilingData: []
         };
-
+        res.write = function (data: any) {
+            try {
+                let result = applyValidation(req, data, profilingResultHandler);
+                if (result) {
+                    arguments[0] = result;
+                }
+            }
+            catch (err) {
+                console.error(err)
+            }
+            finally {
+                originalWrite.apply(res, Array.from(arguments));
+            }
+        }
         res.send = function (data: any) {
             try {
-                let result = JSON.parse(data);
-                const validity = req.__graphQLValidity;
-
-                if (result.data) {
-                    getResponseValidationResults(validity, result);
-                    arguments[0] = JSON.stringify(result);
+                let result = applyValidation(req, data, profilingResultHandler);
+                if (result) {
+                    console.log(result);
+                    arguments[0] = result;
                 }
-
-                setTimeout(() => {
-                    const profilingData = validity.___profilingData;
-                    profilingResultHandler(profilingData);
-                }, 1000);
             }
             catch (err) {
                 console.error(err)

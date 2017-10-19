@@ -24,6 +24,8 @@
 
 /* An object which stores all validator functions
     required to be executed during graphql request */
+import { PROFILING_DEBOUNCE_TIME } from "./magic-values";
+
 export const FieldValidationDefinitions: any = {};
 
 /**
@@ -105,5 +107,30 @@ export function getValidators(field: any, parentTypeName: string) {
     return {
         validators,
         globalValidators
+    }
+}
+
+/**
+ * Modifies express response with validation results
+ *
+ * @param req - express request
+ * @param data - response original data
+ * @param profilingResultHandler - profiling function
+ *
+ * @returns {string} - response modified data
+ */
+export function applyValidation(req, data, profilingResultHandler) {
+    let result = JSON.parse(data);
+
+    const validity = req.__graphQLValidity;
+
+    if (result.data) {
+        getResponseValidationResults(validity, result);
+        setTimeout(() => {
+            const profilingData = validity.___profilingData;
+            profilingResultHandler(profilingData);
+        }, PROFILING_DEBOUNCE_TIME);
+
+        return JSON.stringify(result);
     }
 }
