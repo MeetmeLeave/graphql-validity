@@ -7,5 +7,6 @@ build
 *.log
 *.js
 !examples/*.js
+!examples/**/*.js
 *.d.ts
 *.js.map
