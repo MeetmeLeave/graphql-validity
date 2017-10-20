@@ -34,15 +34,25 @@ import {
     storeProfilingInfo
 } from "./profiling";
 import {
-    applyValidation,
-    getResponseValidationResults,
     getValidationResults,
     getValidators
 } from "./validation";
 
+import hapiMiddleware from './hapi-middleware';
+import expressMiddleware from './express-middleware';
+import koaMiddleware from './koa-middleware';
+
 // Indicates whether schema entity was already processed
 export const Processed = Symbol();
-let profilingResultHandler = defaultProfilingResultHandler;
+
+let profilingResultHandler: any = {
+    handler: defaultProfilingResultHandler
+};
+
+// Set of middleware functions for express, koa and hapi servers
+export const graphQLValidityHapiMiddleware = hapiMiddleware(profilingResultHandler);
+export const graphQLValidityExpressMiddleware = expressMiddleware(profilingResultHandler);
+export const graphQLValidityKoaMiddleware = koaMiddleware(profilingResultHandler);
 
 /**
  * Top level wrapper for the GraphQL schema entities
@@ -64,8 +74,8 @@ export function wrapResolvers(entity: any, config?: ValidityConfig) {
             || onUnhandledError;
 
         if (config.profilingResultHandler) {
-            profilingResultHandler = config.profilingResultHandler ?
-                config.profilingResultHandler : profilingResultHandler;
+            profilingResultHandler.handler = config.profilingResultHandler ?
+                config.profilingResultHandler : profilingResultHandler.handler;
         }
     }
 
@@ -209,96 +219,5 @@ function wrapSchema(schema: any, config: ValidityConfig) {
         }
 
         wrapType(<any>types[typeName], config);
-    }
-}
-
-export async function graphQLValidityKoaMiddleware(ctx, next) {
-    let { req } = ctx;
-    try {
-        req.__graphQLValidity = {
-            ___validationResults: [],
-            ___globalValidationResults: undefined,
-            ___profilingData: []
-        };
-
-        await next();
-
-        ctx.body = applyValidation(req, ctx.body, profilingResultHandler);
-    }
-    catch (err) {
-        console.error(err);
-        await next();
-    }
-}
-
-/**
- * Middleware which will capture validation output and will add it to the original response
- *
- * @param req - express request
- * @param res - express response
- * @param next - next call
- */
-export function graphQLValidityExpressMiddleware(
-    req: any,
-    res: any,
-    next: any
-) {
-    try {
-        let originalSend = res.send;
-        let originalWrite = res.write;
-        req.__graphQLValidity = {
-            ___validationResults: [],
-            ___globalValidationResults: undefined,
-            ___profilingData: []
-        };
-
-        let isProcessed = {
-            processed: false
-        };
-
-        res.write = wrapOriginalResponder(req, res, originalWrite, isProcessed);
-        res.send = wrapOriginalResponder(req, res, originalSend, isProcessed);
-    }
-    catch (err) {
-        console.error(err)
-    }
-    finally {
-        next();
-    }
-}
-
-/**
- * Used to wrap express middleware write and send functions with response
- * modification to push validation results
- *
- * @param req - express request
- * @param res - express response
- * @param {Function} originalFunction - write or send function
- * @param isProcessed - object with boolean flag, to not run same wrapper twice.
- *
- * @returns {(data: any) => any} - wrapper function
- */
-function wrapOriginalResponder(
-    req: any,
-    res: any,
-    originalFunction: Function,
-    isProcessed: any
-) {
-    return function (data: any) {
-        try {
-            if (!isProcessed.processed) {
-                isProcessed.processed = true;
-                let result = applyValidation(req, data, profilingResultHandler);
-                if (result) {
-                    arguments[0] = result;
-                }
-            }
-        }
-        catch (err) {
-            console.error(err)
-        }
-        finally {
-            originalFunction.apply(res, Array.from(arguments));
-        }
     }
 }

@@ -22,5 +22,31 @@
  * SOFTWARE.
  */
 
-// Time delay for profiling to start batch and send responses to the analytics server
-export const PROFILING_DEBOUNCE_TIME = 1000;
+import { applyValidation } from "./validation";
+
+export default (profilingResultHandler) => {
+    /**
+     * Middleware which will capture validation output and will add it to the original response
+     *
+     * @param ctx - koa context
+     * @param next - next call
+     */
+    return async function graphQLValidityKoaMiddleware(ctx, next) {
+        let { req } = ctx;
+        try {
+            req.__graphQLValidity = {
+                ___validationResults: [],
+                ___globalValidationResults: undefined,
+                ___profilingData: []
+            };
+
+            await next();
+
+            ctx.body = applyValidation(req, ctx.body, profilingResultHandler.handler);
+        }
+        catch (err) {
+            console.error(err);
+            await next();
+        }
+    }
+}

@@ -22,5 +22,32 @@
  * SOFTWARE.
  */
 
-// Time delay for profiling to start batch and send responses to the analytics server
-export const PROFILING_DEBOUNCE_TIME = 1000;
+import { applyValidation } from "./validation";
+
+export default (profilingResultHandler) => {
+    /**
+     * Middleware which will capture validation output and will add it to the original response
+     *
+     * @param server - Hapi server
+     */
+    return function graphQLValidityHapiMiddleware(server) {
+        server.ext('onRequest', function (request, reply) {
+            request.__graphQLValidity = {
+                ___validationResults: [],
+                ___globalValidationResults: undefined,
+                ___profilingData: []
+            };
+
+            return reply.continue();
+        });
+
+        server.ext('onPreResponse', function (request, reply) {
+            reply.request.response.source = applyValidation(
+                reply.request,
+                reply.request.response.source,
+                profilingResultHandler.handler
+            );
+            return reply.continue();
+        });
+    }
+}

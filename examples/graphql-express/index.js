@@ -14,8 +14,8 @@ const app = express();
 function validateSomeTestThing(...args) {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
-            resolve([new Error('Wrong stuff here!')]);
-        }, 130)
+            reject([new Error('Wrong stuff here!')]);
+        }, 1300)
     });
 }
 
@@ -52,7 +52,10 @@ wrapResolvers(schema, {
     wrapErrors: true,
     enableProfiling: true,
     profilingResultHandler: (profilingData) => {
-        console.log(JSON.stringify(profilingData, null, 2));
+        console.log('test', profilingData);
+    },
+    unhandledErrorWrapper: (err) => {
+        return new Error('test! No info here');
     }
 });
 
