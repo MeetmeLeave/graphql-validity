@@ -1,0 +1,16 @@
+{
+  "name": "graphql-validity-apollo-hapi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "apollo-server-hapi": "^1.1.7",
+    "graphql-validity": "^0.8.0",
+    "hapi": "^16.6.2"
+  }
+}
