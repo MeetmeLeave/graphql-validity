@@ -232,47 +232,54 @@ export function graphQLValidityExpressMiddleware(
             ___globalValidationResults: undefined,
             ___profilingData: []
         };
-        let processed: boolean = false;
-        res.write = function (data: any) {
-            try {
-                if (!processed) {
-                    processed = true;
-                    let result = applyValidation(req, data, profilingResultHandler);
-                    if (result) {
-                        arguments[0] = result;
-                    }
-                }
-            }
-            catch (err) {
-                console.error(err)
-            }
-            finally {
-                originalWrite.apply(res, Array.from(arguments));
-            }
-        }
-        res.send = function (data: any) {
-            try {
-                if (!processed) {
-                    processed = true;
-                    let result = applyValidation(req, data, profilingResultHandler);
-                    if (result) {
-                        console.log(result);
-                        arguments[0] = result;
-                    }
-                }
-            }
-            catch (err) {
-                console.error(err)
-            }
-            finally {
-                originalSend.apply(res, Array.from(arguments));
-            }
-        }
+
+        let isProcessed = {
+            processed: false
+        };
+
+        res.write = wrapOriginalResponder(req, res, originalWrite, isProcessed);
+        res.send = wrapOriginalResponder(req, res, originalSend, isProcessed);
     }
     catch (err) {
         console.error(err)
     }
     finally {
         next();
+    }
+}
+
+/**
+ * Used to wrap express middleware write and send functions with response
+ * modification to push validation results
+ *
+ * @param req - express request
+ * @param res - express response
+ * @param {Function} originalFunction - write or send function
+ * @param isProcessed - object with boolean flag, to not run same wrapper twice.
+ *
+ * @returns {(data: any) => any} - wrapper function
+ */
+function wrapOriginalResponder(
+    req: any,
+    res: any,
+    originalFunction: Function,
+    isProcessed: any
+) {
+    return function (data: any) {
+        try {
+            if (!isProcessed.processed) {
+                isProcessed.processed = true;
+                let result = applyValidation(req, data, profilingResultHandler);
+                if (result) {
+                    arguments[0] = result;
+                }
+            }
+        }
+        catch (err) {
+            console.error(err)
+        }
+        finally {
+            originalFunction.apply(res, Array.from(arguments));
+        }
     }
 }
