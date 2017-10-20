@@ -212,6 +212,25 @@ function wrapSchema(schema: any, config: ValidityConfig) {
     }
 }
 
+export async function graphQLValidityKoaMiddleware(ctx, next) {
+    let { req } = ctx;
+    try {
+        req.__graphQLValidity = {
+            ___validationResults: [],
+            ___globalValidationResults: undefined,
+            ___profilingData: []
+        };
+
+        await next();
+
+        ctx.body = applyValidation(req, ctx.body, profilingResultHandler);
+    }
+    catch (err) {
+        console.error(err);
+        await next();
+    }
+}
+
 /**
  * Middleware which will capture validation output and will add it to the original response
  *
