@@ -232,11 +232,15 @@ export function graphQLValidityExpressMiddleware(
             ___globalValidationResults: undefined,
             ___profilingData: []
         };
+        let processed: boolean = false;
         res.write = function (data: any) {
             try {
-                let result = applyValidation(req, data, profilingResultHandler);
-                if (result) {
-                    arguments[0] = result;
+                if (!processed) {
+                    processed = true;
+                    let result = applyValidation(req, data, profilingResultHandler);
+                    if (result) {
+                        arguments[0] = result;
+                    }
                 }
             }
             catch (err) {
@@ -248,10 +252,13 @@ export function graphQLValidityExpressMiddleware(
         }
         res.send = function (data: any) {
             try {
-                let result = applyValidation(req, data, profilingResultHandler);
-                if (result) {
-                    console.log(result);
-                    arguments[0] = result;
+                if (!processed) {
+                    processed = true;
+                    let result = applyValidation(req, data, profilingResultHandler);
+                    if (result) {
+                        console.log(result);
+                        arguments[0] = result;
+                    }
                 }
             }
             catch (err) {
