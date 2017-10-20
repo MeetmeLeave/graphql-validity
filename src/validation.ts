@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-/* An object which stores all validator functions
-    required to be executed during graphql request */
 import { PROFILING_DEBOUNCE_TIME } from "./magic-values";
 
+/* An object which stores all validator functions
+    required to be executed during graphql request */
 export const FieldValidationDefinitions: any = {};
 
 /**
