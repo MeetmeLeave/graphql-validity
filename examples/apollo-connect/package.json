@@ -1,0 +1,17 @@
+{
+  "name": "graphql-validity-apollo-connect",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "apollo-server-express": "^1.1.7",
+    "body-parser": "^1.18.2",
+    "connect": "^3.6.5",
+    "graphql-validity": "^0.7.1"
+  }
+}
