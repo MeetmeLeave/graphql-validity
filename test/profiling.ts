@@ -8,7 +8,7 @@ import {
 } from '../src/profiling';
 
 describe('profiling', () => {
-    it('should add profiling data', () => {
+    it('storeProfilingInfo, should add profiling data', () => {
         let validity = {
             ___profilingData: []
         };
@@ -20,4 +20,13 @@ describe('profiling', () => {
         expect(validity.___profilingData[0].profile).to.equal('profile');
     });
 
+    it('defaultProfilingResultHandler, should output to console when profiling data is set', () => {
+        let spy = sinon.spy(console, 'log');
+        let profilingData = [];
+        defaultProfilingResultHandler(profilingData);
+        expect(spy.notCalled).to.be.true;
+        profilingData.push('test');
+        defaultProfilingResultHandler(profilingData);
+        expect(spy.calledWith(JSON.stringify(['test'], null, 2))).to.be.true;
+    });
 });

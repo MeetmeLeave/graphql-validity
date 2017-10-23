@@ -4,7 +4,7 @@
   "description": "Make business logic validation easy on the graphql side without adding any declarations or modifications to the existing graphql schema.",
   "main": "lib/index.js",
   "scripts": {
-    "build": "rm -rf lib && ./node_modules/.bin/tsc -p src",
+    "build": "rm -rf lib && ./node_modules/.bin/tsc -p src && npm test",
     "test": "./node_modules/.bin/tsc -p src && ./node_modules/.bin/nyc mocha"
   },
   "keywords": [
