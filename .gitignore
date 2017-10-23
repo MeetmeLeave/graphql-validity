@@ -10,3 +10,5 @@ build
 !examples/**/*.js
 *.d.ts
 *.js.map
+/.nyc_output
+/coverage
