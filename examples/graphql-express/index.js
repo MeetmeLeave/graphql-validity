@@ -42,10 +42,10 @@ function specialThird(...args) {
 FieldValidationDefinitions['$'] = [applyGlobally];
 FieldValidationDefinitions['Mutation:testMutation'] = [validateSomeTestMutation];
 FieldValidationDefinitions['TestType'] = [validateSomeTestThing];
-FieldValidationDefinitions['TestType:fourth'] = [validateSomeTestThing];
-FieldValidationDefinitions['TestType:fifth'] = [validateSomeTestThing];
+// FieldValidationDefinitions['TestType:fourth'] = [validateSomeTestThing];
+// FieldValidationDefinitions['TestType:fifth'] = [validateSomeTestThing];
 FieldValidationDefinitions['TestType2:first'] = [validateSomeTestThing];
-FieldValidationDefinitions['TestType2:second'] = [validateSomeTestThing];
+// FieldValidationDefinitions['TestType2:second'] = [validateSomeTestThing];
 FieldValidationDefinitions['TestType2:third'] = [specialThird];
 
 wrapResolvers(schema, {
@@ -55,6 +55,7 @@ wrapResolvers(schema, {
         console.log('test', profilingData);
     },
     unhandledErrorWrapper: (err) => {
+        console.log(err)
         return new Error('test! No info here');
     }
 });
