@@ -15,10 +15,7 @@ const TestType = new GraphQLObjectType({
         fourth: {
             type: GraphQLString,
             resolve(obj) {
-                let result = new DataValidationResult();
-                result.data = obj.first;
-                result.errors = [new Error('111111111111'), new Error('2222222')];
-                return result;
+                return obj.first;
             }
         },
         fifth: {
@@ -46,7 +43,10 @@ const TestType2 = new GraphQLObjectType({
         second: {
             type: GraphQLString,
             resolve(obj) {
-                return obj.second;
+                let result = new DataValidationResult();
+                result.data = obj.first;
+                result.errors = [new Error('111111111111'), new Error('2222222')];
+                return result;
             }
         },
         third: {
