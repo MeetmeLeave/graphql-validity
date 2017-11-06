@@ -23,4 +23,5 @@
  */
 
 export * from './schema-wrapper';
+export { DataValidationResult } from './helpers';
 export { FieldValidationDefinitions } from './validation';
