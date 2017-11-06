@@ -26,7 +26,6 @@
  * Contains configuration options for the main function
  */
 import {
-    DataValidationResult,
     onUnhandledError,
     ValidityConfig
 } from "./helpers";
@@ -35,6 +34,7 @@ import {
     storeProfilingInfo
 } from "./profiling";
 import {
+    getResolveValidationResult,
     getValidationResults,
     getValidators
 } from "./validation";
@@ -156,25 +156,7 @@ function wrapField(
             // validation end time
             const vet = Date.now();
             let resolveOutput = await resolve.call(this, ...args);
-
-            let result = resolveOutput;
-
-            if (resolveOutput instanceof DataValidationResult) {
-                if (validity) {
-                    let {
-                        validationResults
-                    } = getValidationResults(validity);
-
-                    if (resolveOutput.errors && resolveOutput.errors.length) {
-                        Array.prototype.push.apply(
-                            validationResults,
-                            resolveOutput.errors
-                        );
-                    }
-                }
-
-                result = resolveOutput.data;
-            }
+            let result = getResolveValidationResult(resolveOutput, validity);
 
             // execution end time
             const eet = Date.now();

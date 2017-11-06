@@ -23,6 +23,7 @@
  */
 
 import { PROFILING_DEBOUNCE_TIME } from "./magic-values";
+import { DataValidationResult } from "./helpers";
 
 /* An object which stores all validator functions
     required to be executed during graphql request */
@@ -54,6 +55,38 @@ export function getResponseValidationResults(validity: any, data: any) {
                     };
                 })
             );
+}
+
+/**
+ *  Grabs validation error from the graphql resolve function
+ *  in case DataValidationResult type was returned as result.
+ *
+ * @param resolveOutput - output of the resolver function
+ * @param validity - an object injected to request at the beginning of the http call
+ *
+ * @returns {any} - returns real resolve data output
+ */
+export function getResolveValidationResult(resolveOutput: any, validity: any) {
+    let result = resolveOutput;
+
+    if (resolveOutput instanceof DataValidationResult) {
+        if (validity) {
+            let {
+                validationResults
+            } = getValidationResults(validity);
+
+            if (resolveOutput.errors && resolveOutput.errors.length) {
+                Array.prototype.push.apply(
+                    validationResults,
+                    resolveOutput.errors
+                );
+            }
+        }
+
+        result = resolveOutput.data;
+    }
+
+    return result;
 }
 
 /**
