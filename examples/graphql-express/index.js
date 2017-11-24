@@ -14,7 +14,7 @@ const app = express();
 function validateSomeTestThing(...args) {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
-            reject([new Error('Wrong stuff here!')]);
+            reject('Wrong stuff here!');
         }, 1300)
     });
 }
@@ -31,10 +31,14 @@ function validateSomeTestMutation(...args) {
     return [new Error('testMutation failed!')];
 }
 
+function validateSomeTestMutationEmptyReturn(...args) {
+    return;
+}
+
 function specialThird(...args) {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
-            resolve([new Error('Special third failed!')]);
+            resolve(new Error('Special third failed!'));
         }, 250)
     });
 }
@@ -43,7 +47,7 @@ FieldValidationDefinitions['$'] = [applyGlobally];
 FieldValidationDefinitions['Mutation:testMutation'] = [validateSomeTestMutation];
 FieldValidationDefinitions['TestType'] = [validateSomeTestThing];
 // FieldValidationDefinitions['TestType:fourth'] = [validateSomeTestThing];
-// FieldValidationDefinitions['TestType:fifth'] = [validateSomeTestThing];
+FieldValidationDefinitions['TestType:fifth'] = [validateSomeTestMutationEmptyReturn];
 FieldValidationDefinitions['TestType2:first'] = [validateSomeTestThing];
 // FieldValidationDefinitions['TestType2:second'] = [validateSomeTestThing];
 FieldValidationDefinitions['TestType2:third'] = [specialThird];
@@ -56,7 +60,8 @@ wrapResolvers(schema, {
     },
     unhandledErrorWrapper: (err) => {
         console.log(err)
-        return new Error('test! No info here');
+        // return new Error('test! No info here');
+        return err;
     }
 });
 
