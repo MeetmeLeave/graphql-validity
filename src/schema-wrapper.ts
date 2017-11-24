@@ -138,17 +138,24 @@ function wrapField(
                     validity.___globalValidationResults = [];
                     globalValidationResults = validity.___globalValidationResults;
                     for (let validator of globalValidators) {
+                        let validationResult = (await validator.call(this, ...args)) || [];
+                        validationResult = Array.isArray(validationResult) ?
+                            validationResult : [validationResult];
+
                         Array.prototype.push.apply(
                             globalValidationResults,
-                            await validator.call(this, ...args)
+                            validationResult
                         );
                     }
                 }
 
                 for (let validator of validators) {
+                    let validationResult = (await validator.call(this, ...args)) || [];
+                    validationResult = Array.isArray(validationResult) ? validationResult : [validationResult];
+
                     Array.prototype.push.apply(
                         validationResults,
-                        await validator.call(this, ...args)
+                        validationResult
                     );
                 }
             }
