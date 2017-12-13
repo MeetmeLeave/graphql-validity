@@ -44,6 +44,14 @@ export class DataValidationResult {
     errors: Array<Error>;
 }
 
+// Error object, which must path through error masking
+export class ValidityError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = "ValidityError";
+    }
+}
+
 /**
  * Default error wrapper function to hide error info from end users
  *
@@ -51,9 +59,13 @@ export class DataValidationResult {
  * @returns {Error} - error object with critical data hidden
  */
 export function onUnhandledError(error: Error) {
+    if (error instanceof ValidityError) {
+        return error;
+    }
+
     const id = uuid();
 
-    console.error(`Unhandled error occured with id:${id}, stack:${error.stack}`);
+    console.error(`Unhandled error occured with id:${id}, error:${error}`);
 
     return new Error(`An internal error occured, with following id:${id}, please contact Administrator!`)
 }
