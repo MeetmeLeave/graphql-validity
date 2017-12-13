@@ -4,7 +4,8 @@ const graphqlHTTP = require('express-graphql');
 const {
     FieldValidationDefinitions,
     wrapResolvers,
-    graphQLValidityExpressMiddleware
+    graphQLValidityExpressMiddleware,
+    ValidityError
 } = require('../../lib/index');
 
 const schema = require('./schema');
@@ -38,31 +39,26 @@ function validateSomeTestMutationEmptyReturn(...args) {
 function specialThird(...args) {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
-            resolve(new Error('Special third failed!'));
+            resolve(new ValidityError('Special third failed!'));
         }, 250)
     });
+}
+
+function specialFourth(...args) {
+    throw new Error('Special fourth failed!');
 }
 
 FieldValidationDefinitions['$'] = [applyGlobally];
 FieldValidationDefinitions['Mutation:testMutation'] = [validateSomeTestMutation];
 FieldValidationDefinitions['TestType'] = [validateSomeTestThing];
-// FieldValidationDefinitions['TestType:fourth'] = [validateSomeTestThing];
+FieldValidationDefinitions['TestType:fourth'] = [specialFourth];
 FieldValidationDefinitions['TestType:fifth'] = [validateSomeTestMutationEmptyReturn];
 FieldValidationDefinitions['TestType2:first'] = [validateSomeTestThing];
 // FieldValidationDefinitions['TestType2:second'] = [validateSomeTestThing];
 FieldValidationDefinitions['TestType2:third'] = [specialThird];
 
 wrapResolvers(schema, {
-    wrapErrors: true,
-    enableProfiling: true,
-    profilingResultHandler: (profilingData) => {
-        console.log('test', profilingData);
-    },
-    unhandledErrorWrapper: (err) => {
-        console.log(err)
-        // return new Error('test! No info here');
-        return err;
-    }
+    wrapErrors: true
 });
 
 app.use(graphQLValidityExpressMiddleware);
