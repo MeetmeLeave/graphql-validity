@@ -1,6 +1,4 @@
-import * as mock from 'mock-require';
 import { expect } from 'chai';
-import * as sinon from 'sinon';
 
 import {
     FieldValidationDefinitions,
@@ -68,8 +66,8 @@ describe('validation', () => {
         it('should return object with both global and general validation results ' +
             'if ___validationResults are passed', () => {
             const validity = {
-                ___globalValidationResults: ['test1'],
-                ___validationResults: ['test2']
+                ___globalValidationResults: [new Error('test1')],
+                ___validationResults: [new Error('test2')]
             };
 
             const result = getValidationResults(validity);
@@ -82,5 +80,24 @@ describe('validation', () => {
             const result = getValidationResults(validity);
             expect(result).to.have.all.keys('validationResults', 'globalValidationResults');
         });
+    });
+
+    describe('getResponseValidationResults', () => {
+        it('it should add errors array to data object passed', () => {
+            const validationError = new Error('test2');
+            const globalError = new Error('test1');
+            const validity = {
+                ___globalValidationResults: [globalError],
+                ___validationResults: [validationError]
+            };
+
+            const data = { data: {}, errors: [new Error('test3')] };
+            getResponseValidationResults(validity, data);
+            expect(data.errors.length).to.equal(3);
+        });
+    });
+
+    describe('getResolveValidationResult', () => {
+
     });
 });
