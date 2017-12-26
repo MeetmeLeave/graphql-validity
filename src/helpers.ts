@@ -59,7 +59,7 @@ export class ValidityError extends Error {
  * @returns {Error} - error object with critical data hidden
  */
 export function onUnhandledError(error: Error) {
-    if (error instanceof ValidityError) {
+    if (error.name === 'ValidityError') {
         return error;
     }
 
