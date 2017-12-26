@@ -66,6 +66,8 @@ app.use('/graphql', graphqlHTTP((request) => {
     return {
         schema,
         graphiql: true,
+        // Do not forget to pass your request as a rootValue, 
+        // as we need to connect custom validation execution result with response
         rootValue: request
     }
 }));
