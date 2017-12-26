@@ -152,12 +152,15 @@ export function getValidators(field: any, parentTypeName: string) {
  *
  * @returns {string} - response modified data
  */
-export function applyValidation(req, data, profilingResultHandler) {
+export function applyValidation(
+    req: any,
+    data: any,
+    profilingResultHandler: Function
+) {
     let result = JSON.parse(data);
 
-    const validity = req.__graphQLValidity;
-
     if (result.data) {
+        const validity = req.__graphQLValidity;
         getResponseValidationResults(validity, result);
         setTimeout(() => {
             const profilingData = validity.___profilingData;
