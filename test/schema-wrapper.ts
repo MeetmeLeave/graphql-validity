@@ -74,16 +74,11 @@ describe('schema-wrapper', () => {
         });
 
         it('resolve should return result if validity is set up', async () => {
-            const resolve = function () {
-                return true;
-            };
-            const field = { resolve };
-            wrapResolvers(field);
 
-            const validity = {};
+        });
 
-            const result = await field.resolve();
-            expect(result).to.be.true;
+        it('resolve should perform validation if validity is set up', async () => {
+
         });
     });
 });

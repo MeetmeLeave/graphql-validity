@@ -58,10 +58,37 @@ FieldValidationDefinitions['TestType2:first'] = [validateSomeTestThing];
 FieldValidationDefinitions['TestType2:third'] = [specialThird];
 
 wrapResolvers(schema, {
-    wrapErrors: true
+    wrapErrors: true,
+    enableProfiling: true,
+    profilingResultHandler: (profilingData, __graphQLValidityRequestId) => {
+        console.log(JSON.stringify(profilingData, null, 2));
+        console.log(__graphQLValidityRequestId);
+    }
 });
 
+function loggingMiddleware(req, res, next) {
+    try {
+        const id = '123-234-222-111';
+        req.__graphQLValidityRequestId = id;
+        const startTime = new Date();
+
+        let originalSend = res.send;
+        res.send = function (data) {
+            const diff = new Date() - startTime;
+            console.log('Execution diff:', diff / 1000);
+            originalSend.apply(res, Array.from(arguments));
+        }
+    }
+    catch (err) {
+        console.error(err)
+    }
+    finally {
+        next();
+    }
+}
+
 app.use(graphQLValidityExpressMiddleware);
+app.use(loggingMiddleware);
 
 app.use('/graphql', graphqlHTTP((request) => {
     return {

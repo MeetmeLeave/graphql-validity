@@ -164,7 +164,7 @@ export function applyValidation(
         getResponseValidationResults(validity, result);
         setTimeout(() => {
             const profilingData = validity.___profilingData;
-            profilingResultHandler(profilingData);
+            profilingResultHandler(profilingData, req.__graphQLValidityRequestId);
         }, PROFILING_DEBOUNCE_TIME);
 
         return JSON.stringify(result);

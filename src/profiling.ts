@@ -23,9 +23,9 @@
  */
 
 // The default profiling result display
-export let defaultProfilingResultHandler = (profilingData: any) => {
+export let defaultProfilingResultHandler = (profilingData: any, __graphQLValidityRequestId:any) => {
     if (profilingData.length > 0) {
-        console.log(JSON.stringify(profilingData, null, 2));
+        console.log(JSON.stringify(profilingData, null, 2), __graphQLValidityRequestId);
     }
 };
 
