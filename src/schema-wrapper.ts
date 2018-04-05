@@ -138,7 +138,8 @@ function wrapField(
                 if (!globalValidationResults) {
                     validity.___globalValidationResults = [];
                     globalValidationResults = validity.___globalValidationResults;
-                    for (let validator of globalValidators) {
+                    for (let i = 0, s = globalValidators.length; i < s; i++) {
+                        let validator = globalValidators[i];
                         let validationResult = (await validator.apply(this, args)) || [];
                         validationResult = Array.isArray(validationResult) ?
                             validationResult : [validationResult];
@@ -149,8 +150,8 @@ function wrapField(
                         );
                     }
                 }
-
-                for (let validator of validators) {
+                for (let i = 0, s = validators.length; i < s; i++) {
+                    let validator = validators[i];
                     let validationResult = (await validator.apply(this, args)) || [];
                     validationResult = Array.isArray(validationResult) ? validationResult : [validationResult];
 
