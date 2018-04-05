@@ -112,7 +112,8 @@ function wrapField(
             let parentTypeName;
             let ast;
             let validity;
-            for (let arg of [...args]) {
+            for (let i = 0, s = args.length; i < s; i++) {
+                let arg = args[i];
                 if (arg && arg.rootValue && arg.rootValue.__graphQLValidity) {
                     validity = arg.rootValue.__graphQLValidity;
                 }
@@ -138,7 +139,7 @@ function wrapField(
                     validity.___globalValidationResults = [];
                     globalValidationResults = validity.___globalValidationResults;
                     for (let validator of globalValidators) {
-                        let validationResult = (await validator.call(this, ...args)) || [];
+                        let validationResult = (await validator.apply(this, args)) || [];
                         validationResult = Array.isArray(validationResult) ?
                             validationResult : [validationResult];
 
@@ -150,7 +151,7 @@ function wrapField(
                 }
 
                 for (let validator of validators) {
-                    let validationResult = (await validator.call(this, ...args)) || [];
+                    let validationResult = (await validator.apply(this, args)) || [];
                     validationResult = Array.isArray(validationResult) ? validationResult : [validationResult];
 
                     Array.prototype.push.apply(
@@ -162,7 +163,7 @@ function wrapField(
 
             // validation end time
             const vet = Date.now();
-            let resolveOutput = await resolve.call(this, ...args);
+            let resolveOutput = await resolve.apply(this, args);
             let result = getResolveValidationResult(resolveOutput, validity);
 
             // execution end time
