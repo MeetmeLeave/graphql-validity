@@ -105,17 +105,7 @@ function wrapField(
     }
 
     field[Processed] = true;
-    field.resolve = config.enableProfiling ?
-        getProfilingResolver(field, config, resolve) :
-        getOptimizedResolver(field, config, resolve);
-}
-
-function getProfilingResolver(
-    field: any,
-    config: ValidityConfig,
-    resolve: any
-) {
-    return async function (...args: any[]) {
+    field.resolve = async function (...args: any[]) {
         try {
             // profiling start time
             var pst = Date.now();
@@ -194,78 +184,6 @@ function getProfilingResolver(
             catch (err) {
                 console.error('Profiling failed!', err);
             }
-
-            return result;
-        } catch (e) {
-            if (config.wrapErrors) {
-                throw config.unhandledErrorWrapper(e);
-            }
-
-            throw e;
-        }
-    };
-}
-
-function getOptimizedResolver(
-    field: any,
-    config: ValidityConfig,
-    resolve: any
-) {
-    return async function (...args: any[]) {
-        try {
-            let parentTypeName;
-            let validity;
-            for (let i = 0, s = args.length; i < s; i++) {
-                let arg = args[i];
-                if (arg && arg.rootValue && arg.rootValue.__graphQLValidity) {
-                    validity = arg.rootValue.__graphQLValidity;
-                }
-
-                if (arg && arg.parentType) {
-                    parentTypeName = arg.parentType;
-                }
-            }
-
-            if (validity) {
-                let {
-                    validationResults,
-                    globalValidationResults
-                } = getValidationResults(validity);
-
-                let {
-                    validators,
-                    globalValidators
-                } = getValidators(field, parentTypeName);
-
-                if (!globalValidationResults) {
-                    validity.___globalValidationResults = [];
-                    globalValidationResults = validity.___globalValidationResults;
-                    for (let i = 0, s = globalValidators.length; i < s; i++) {
-                        let validator = globalValidators[i];
-                        let validationResult = (await validator.apply(this, args)) || [];
-                        validationResult = Array.isArray(validationResult) ?
-                            validationResult : [validationResult];
-
-                        Array.prototype.push.apply(
-                            globalValidationResults,
-                            validationResult
-                        );
-                    }
-                }
-                for (let i = 0, s = validators.length; i < s; i++) {
-                    let validator = validators[i];
-                    let validationResult = (await validator.apply(this, args)) || [];
-                    validationResult = Array.isArray(validationResult) ? validationResult : [validationResult];
-
-                    Array.prototype.push.apply(
-                        validationResults,
-                        validationResult
-                    );
-                }
-            }
-
-            let resolveOutput = await resolve.apply(this, args);
-            let result = getResolveValidationResult(resolveOutput, validity);
 
             return result;
         } catch (e) {
