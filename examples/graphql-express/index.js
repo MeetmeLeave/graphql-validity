@@ -14,9 +14,10 @@ const app = express();
 
 function validateSomeTestThing(...args) {
     return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            reject('Wrong stuff here!');
-        }, 1300)
+        // setTimeout(() => {
+        //     reject('Wrong stuff here!');
+        // }, 1300)
+        reject('Wrong stuff here!');
     });
 }
 
@@ -38,31 +39,32 @@ function validateSomeTestMutationEmptyReturn(...args) {
 
 function specialThird(...args) {
     return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve(new ValidityError('Special third failed!'));
-        }, 250)
+        // setTimeout(() => {
+        //     resolve(new ValidityError('Special third failed!'));
+        // }, 250)
+        resolve(new ValidityError('Special third failed!'));
     });
 }
 
 function specialFourth(...args) {
-    throw new Error('Special fourth failed!');
+    return [new Error('Special fourth failed!')];
 }
 
 FieldValidationDefinitions['$'] = [applyGlobally];
 FieldValidationDefinitions['Mutation:testMutation'] = [validateSomeTestMutation];
-FieldValidationDefinitions['TestType'] = [validateSomeTestThing];
-FieldValidationDefinitions['TestType:fourth'] = [specialFourth];
+// FieldValidationDefinitions['TestType'] = [validateSomeTestThing];
+FieldValidationDefinitions['TestType:fourth'] = [specialFourth, specialFourth];
 FieldValidationDefinitions['TestType:fifth'] = [validateSomeTestMutationEmptyReturn];
-FieldValidationDefinitions['TestType2:first'] = [validateSomeTestThing];
+// FieldValidationDefinitions['TestType2:first'] = [validateSomeTestThing];
 // FieldValidationDefinitions['TestType2:second'] = [validateSomeTestThing];
 FieldValidationDefinitions['TestType2:third'] = [specialThird];
 
 wrapResolvers(schema, {
-    wrapErrors: true,
-    enableProfiling: true,
+    wrapErrors: false,
+    enableProfiling: false,
     profilingResultHandler: (profilingData, __graphQLValidityRequestId) => {
-        console.log(JSON.stringify(profilingData, null, 2));
-        console.log(__graphQLValidityRequestId);
+        // console.log(JSON.stringify(profilingData, null, 2));
+        // console.log(__graphQLValidityRequestId);
     }
 });
 

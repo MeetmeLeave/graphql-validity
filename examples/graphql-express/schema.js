@@ -22,9 +22,10 @@ const TestType = new GraphQLObjectType({
             type: GraphQLString,
             resolve(obj) {
                 return new Promise((resolve, reject) => {
-                    setTimeout(() => {
-                        resolve(obj.second);
-                    }, 400);
+                    // setTimeout(() => {
+                    //     resolve(obj.second);
+                    // }, 400);
+                    resolve(obj.second);
                 });
             }
         }
@@ -63,6 +64,219 @@ const TestType2 = new GraphQLObjectType({
                         }, {
                             first: '3',
                             second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
+                        }, {
+                            first: '3',
+                            second: '3'
                         }]);
                     }, 400);
                 });
@@ -79,12 +293,16 @@ const schema = new GraphQLSchema({
                 type: TestType2,
                 resolve() {
                     return new Promise((resolve, reject) => {
-                        setTimeout(() => {
-                            resolve({
-                                first: 'lalalal',
-                                second: 'I Have An Error'
-                            });
-                        }, 3000)
+                        // setTimeout(() => {
+                        //     resolve({
+                        //         first: 'lalalal',
+                        //         second: 'I Have An Error'
+                        //     });
+                        // }, 3000)
+                        resolve({
+                            first: 'lalalal',
+                            second: 'I Have An Error'
+                        });
                     });
                 }
             }
@@ -102,12 +320,16 @@ const schema = new GraphQLSchema({
                 },
                 resolve() {
                     return new Promise((resolve, reject) => {
-                        setTimeout(() => {
-                            resolve({
-                                first: 'dsfs',
-                                second: 'dsfsdf'
-                            });
-                        }, 2000)
+                        // setTimeout(() => {
+                        //     resolve({
+                        //         first: 'dsfs',
+                        //         second: 'dsfsdf'
+                        //     });
+                        // }, 2000)
+                        resolve({
+                            first: 'dsfs',
+                            second: 'dsfsdf'
+                        });
                     });
                 }
             }
