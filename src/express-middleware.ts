@@ -42,7 +42,7 @@ export default (profilingResultHandler) => {
             let originalWrite = res.write;
             req.__graphQLValidity = {
                 ___validationResults: [],
-                ___globalValidationResults: undefined,
+                ___globalValidationResultsCaptured: false,
                 ___profilingData: []
             };
 

@@ -24,11 +24,9 @@ describe('validation', () => {
             let result = getValidators({
                 type: 'TestField',
                 name: 'TestField'
-            }, 'TestObj');
+            }, 'TestObj', { ___globalValidationResultsCaptured: false });
 
-            expect(result).to.have.all.keys('validators', 'globalValidators');
-            expect(result['globalValidators'].length).to.be.equal(1);
-            expect(result['validators'].length).to.be.equal(2);
+            expect(result.length).to.be.equal(3);
         });
     });
 
@@ -44,8 +42,8 @@ describe('validation', () => {
 
         it('should return value if result has data object', () => {
             const validity = {
-                ___globalValidationResults: [new Error('test1')],
-                ___validationResults: [new Error('test2')]
+                ___globalValidationResultsCaptured: false,
+                ___validationResults: [new Error('test2'), new Error('test1')]
             };
 
             const result = applyValidation({ __graphQLValidity: validity }, '{"data": { "result" :"test"}}', () => {});
@@ -54,8 +52,8 @@ describe('validation', () => {
 
         it('should return errors array attached to the response', () => {
             const validity = {
-                ___globalValidationResults: [new Error('test1')],
-                ___validationResults: [new Error('test2')]
+                ___globalValidationResultsCaptured: false,
+                ___validationResults: [new Error('test2'), new Error('test1')]
             };
 
             const result = applyValidation({ __graphQLValidity: validity }, '{"data": { "result" :"test"}}', () => {});
@@ -67,19 +65,20 @@ describe('validation', () => {
         it('should return object with both global and general validation results ' +
             'if ___validationResults are passed', () => {
             const validity = {
-                ___globalValidationResults: [new Error('test1')],
-                ___validationResults: [new Error('test2')]
+                ___globalValidationResultsCaptured: false,
+                ___validationResults: [new Error('test2'), new Error('test1')]
             };
 
             const result = getValidationResults(validity);
-            expect(result).to.have.all.keys('validationResults', 'globalValidationResults');
+            expect(result).to.be.an('array');
+            expect(result.length).to.equal(2);
         });
 
-        it('should return object with both global and general validation results ' +
+        it('should return empty array of validation results ' +
             'if ___validationResults is not passed', () => {
             const validity = {};
             const result = getValidationResults(validity);
-            expect(result).to.have.all.keys('validationResults', 'globalValidationResults');
+            expect(result).to.be.an('array').to.be.empty;
         });
     });
 
@@ -88,8 +87,8 @@ describe('validation', () => {
             const validationError = new Error('test2');
             const globalError = new Error('test1');
             const validity = {
-                ___globalValidationResults: [globalError],
-                ___validationResults: [validationError]
+                ___globalValidationResultsCaptured: false,
+                ___validationResults: [validationError, globalError]
             };
 
             const data = { data: {}, errors: [new Error('test3')] };
@@ -104,8 +103,8 @@ describe('validation', () => {
             const validationError = new Error('test2');
             const globalError = new Error('test1');
             const validity = {
-                ___globalValidationResults: [globalError],
-                ___validationResults: [validationError]
+                ___globalValidationResultsCaptured: false,
+                ___validationResults: [validationError, globalError]
             };
 
             var result = getResolveValidationResult(output, validity);
@@ -128,12 +127,11 @@ describe('validation', () => {
             const validationError = new Error('test2');
             const globalError = new Error('test1');
             const validity = {
-                ___globalValidationResults: [globalError],
-                ___validationResults: [validationError]
+                ___validationResults: [validationError, globalError]
             };
 
             getResolveValidationResult(output, validity);
-            expect(validity.___validationResults.length).to.be.equal(2);
+            expect(validity.___validationResults.length).to.be.equal(3);
         });
     });
 });

@@ -22,10 +22,10 @@ describe('profiling', () => {
     it('defaultProfilingResultHandler, should output to console when profiling data is set', () => {
         let spy = sinon.spy(console, 'log');
         let profilingData = [];
-        defaultProfilingResultHandler(profilingData);
+        defaultProfilingResultHandler(profilingData, '0');
         expect(spy.notCalled).to.be.true;
         profilingData.push('test');
-        defaultProfilingResultHandler(profilingData);
+        defaultProfilingResultHandler(profilingData, '1');
         expect(spy.calledWith(JSON.stringify(['test'], null, 2))).to.be.true;
     });
 });

@@ -36,7 +36,7 @@ export default (profilingResultHandler) => {
         try {
             req.__graphQLValidity = {
                 ___validationResults: [],
-                ___globalValidationResults: undefined,
+                ___globalValidationResultsCaptured: false,
                 ___profilingData: []
             };
 

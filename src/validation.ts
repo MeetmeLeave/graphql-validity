@@ -30,14 +30,12 @@ import { DataValidationResult } from "./helpers";
 export const FieldValidationDefinitions: any = {};
 
 /**
- * Builds errors array, using validation and global validation results
+ * Builds errors array, using validation results
  *
  * @param validity - an object injected to request at the beginning of the http call
  * @param data - result of graphql call
  */
 export function getResponseValidationResults(validity: any, data: any) {
-    let globalValidationResults = validity.___globalValidationResults
-        || [];
     data.errors =
         (data.errors || [])
             .concat(
@@ -47,13 +45,6 @@ export function getResponseValidationResults(validity: any, data: any) {
                             message: error.message
                         };
                     })
-            )
-            .concat(
-                globalValidationResults.map(error => {
-                    return {
-                        message: error.message
-                    };
-                })
             );
 }
 
@@ -71,10 +62,7 @@ export function getResolveValidationResult(resolveOutput: any, validity: any) {
 
     if (resolveOutput instanceof DataValidationResult) {
         if (validity) {
-            let {
-                validationResults
-            } = getValidationResults(validity);
-
+            let validationResults = getValidationResults(validity);
             if (resolveOutput.errors && resolveOutput.errors.length) {
                 Array.prototype.push.apply(
                     validationResults,
@@ -93,8 +81,7 @@ export function getResolveValidationResult(resolveOutput: any, validity: any) {
  * Returns lists of graphql validation messages arrays from request object
  *
  * @param request - express request object
- * @returns {{validationResults: any; globalValidationResults: any}} -
- * list of validation result messages for both local and global validators
+ * @returns {validationResults: any[]} - list of validation result messages
  */
 export function getValidationResults(validity: any) {
     let validationResults = validity.___validationResults;
@@ -104,12 +91,7 @@ export function getValidationResults(validity: any) {
         validationResults = validity.___validationResults;
     }
 
-    let globalValidationResults = validity.___globalValidationResults;
-
-    return {
-        validationResults,
-        globalValidationResults
-    }
+    return validationResults;
 }
 
 /**
@@ -117,10 +99,16 @@ export function getValidationResults(validity: any) {
  *
  * @param field - field which will be validated
  * @param {string} parentTypeName - name of the parent object where field belongs to
- * @returns {{validators: T[]; globalValidators: (any | Array)}}
+ * @param validity - an object injected to request at the beginning of the http call
+ *
+ * @returns {validators: any[]}
  * - list of local and global validator functions
  */
-export function getValidators(field: any, parentTypeName: string) {
+export function getValidators(
+    field: any,
+    parentTypeName: string,
+    validity: any
+) {
     let validators =
         (
             FieldValidationDefinitions['*']
@@ -133,14 +121,14 @@ export function getValidators(field: any, parentTypeName: string) {
         (
             FieldValidationDefinitions[parentTypeName + ':' + field.name]
             || []
-        )
+        );
 
-    let globalValidators = FieldValidationDefinitions['$'] || [];
-
-    return {
-        validators,
-        globalValidators
+    if (!validity.___globalValidationResultsCaptured) {
+        validity.___globalValidationResultsCaptured = true;
+        validators = validators.concat(FieldValidationDefinitions['$'] || []);
     }
+
+    return validators;
 }
 
 /**

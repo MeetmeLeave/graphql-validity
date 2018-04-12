@@ -34,7 +34,7 @@ export default (profilingResultHandler) => {
         server.ext('onRequest', function (request, reply) {
             request.__graphQLValidity = {
                 ___validationResults: [],
-                ___globalValidationResults: undefined,
+                ___globalValidationResultsCaptured: false,
                 ___profilingData: []
             };
 

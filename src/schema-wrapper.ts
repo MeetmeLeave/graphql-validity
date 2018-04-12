@@ -114,9 +114,9 @@ function wrapField(
 function validateFieldResolution(
     field: any,
     config: ValidityConfig,
-    resolve: Function
+    resolver: Function
 ) {
-    return async function (...args: any[]) {
+    return function (...args: any[]) {
         try {
             let parentTypeName;
             let ast;
@@ -134,47 +134,24 @@ function validateFieldResolution(
             }
 
             if (validity) {
-                let {
-                    validationResults,
-                    globalValidationResults
-                } = getValidationResults(validity);
+                let validationResults = getValidationResults(validity);
+                let validators = getValidators(field, parentTypeName, validity);
 
-                let {
-                    validators,
-                    globalValidators
-                } = getValidators(field, parentTypeName);
+                const result = processValidators(validators, validationResults, args);
 
-                if (!globalValidationResults) {
-                    validity.___globalValidationResults = [];
-                    globalValidationResults = validity.___globalValidationResults;
-                    for (let i = 0, s = globalValidators.length; i < s; i++) {
-                        let validator = globalValidators[i];
-                        let validationResult = (await validator.apply(this, args)) || [];
-                        validationResult = Array.isArray(validationResult) ?
-                            validationResult : [validationResult];
-
-                        Array.prototype.push.apply(
-                            globalValidationResults,
-                            validationResult
-                        );
-                    }
-                }
-                for (let i = 0, s = validators.length; i < s; i++) {
-                    let validator = validators[i];
-                    let validationResult = (await validator.apply(this, args)) || [];
-                    validationResult = Array.isArray(validationResult) ? validationResult : [validationResult];
-
-                    Array.prototype.push.apply(
-                        validationResults,
-                        validationResult
-                    );
+                if (result && result.then) {
+                    return new Promise((resolve, reject) => {
+                        resolve(resolver.apply(this, args));
+                    });
                 }
             }
 
-            let resolveOutput = await resolve.apply(this, args);
-            let result = getResolveValidationResult(resolveOutput, validity);
+            return resolver.apply(this, args);
 
-            return result;
+            // let resolveOutput = await resolver.apply(this, args);
+            // let result = getResolveValidationResult(resolveOutput, validity);
+            //
+            // return result;
         } catch (e) {
             if (config.wrapErrors) {
                 throw config.unhandledErrorWrapper(e);
@@ -183,6 +160,46 @@ function validateFieldResolution(
             throw e;
         }
     };
+}
+
+function processValidators(
+    validators: Function[],
+    validationResults: any[],
+    args: any[]
+) {
+    let promises = [];
+
+    for (let i = 0, s = validators.length; i < s; i++) {
+        let validator = validators[i];
+        let validationResult = validator.apply(this, args) || [];
+        if (validationResult.then) {
+            promises.push(validationResult);
+        }
+        else {
+            validationResult = Array.isArray(validationResult) ? validationResult : [validationResult];
+
+            Array.prototype.push.apply(
+                validationResults,
+                validationResult
+            );
+        }
+    }
+
+    if (promises.length) {
+        return new Promise(async (resolve, reject) => {
+            for (let promise of promises) {
+                let validationResult = (await promise) || [];
+                validationResult = Array.isArray(validationResult) ? validationResult : [validationResult];
+
+                Array.prototype.push.apply(
+                    validationResults,
+                    validationResult
+                );
+            }
+
+            resolve();
+        });
+    }
 }
 
 function validateAndProfileFieldResolution(
@@ -210,31 +227,9 @@ function validateAndProfileFieldResolution(
             }
 
             if (validity) {
-                let {
-                    validationResults,
-                    globalValidationResults
-                } = getValidationResults(validity);
+                let validationResults = getValidationResults(validity);
+                let validators = getValidators(field, parentTypeName, validity);
 
-                let {
-                    validators,
-                    globalValidators
-                } = getValidators(field, parentTypeName);
-
-                if (!globalValidationResults) {
-                    validity.___globalValidationResults = [];
-                    globalValidationResults = validity.___globalValidationResults;
-                    for (let i = 0, s = globalValidators.length; i < s; i++) {
-                        let validator = globalValidators[i];
-                        let validationResult = (await validator.apply(this, args)) || [];
-                        validationResult = Array.isArray(validationResult) ?
-                            validationResult : [validationResult];
-
-                        Array.prototype.push.apply(
-                            globalValidationResults,
-                            validationResult
-                        );
-                    }
-                }
                 for (let i = 0, s = validators.length; i < s; i++) {
                     let validator = validators[i];
                     let validationResult = (await validator.apply(this, args)) || [];
