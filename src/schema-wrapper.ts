@@ -105,7 +105,92 @@ function wrapField(
     }
 
     field[Processed] = true;
-    field.resolve = async function (...args: any[]) {
+
+    field.resolve = config.enableProfiling ?
+        validateAndProfileFieldResolution(field, config, resolve) :
+        validateFieldResolution(field, config, resolve);
+}
+
+function validateFieldResolution(
+    field: any,
+    config: ValidityConfig,
+    resolve: Function
+) {
+    return async function (...args: any[]) {
+        try {
+            let parentTypeName;
+            let ast;
+            let validity;
+            for (let i = 0, s = args.length; i < s; i++) {
+                let arg = args[i];
+                if (arg && arg.rootValue && arg.rootValue.__graphQLValidity) {
+                    validity = arg.rootValue.__graphQLValidity;
+                }
+
+                if (arg && arg.parentType) {
+                    ast = arg;
+                    parentTypeName = arg.parentType;
+                }
+            }
+
+            if (validity) {
+                let {
+                    validationResults,
+                    globalValidationResults
+                } = getValidationResults(validity);
+
+                let {
+                    validators,
+                    globalValidators
+                } = getValidators(field, parentTypeName);
+
+                if (!globalValidationResults) {
+                    validity.___globalValidationResults = [];
+                    globalValidationResults = validity.___globalValidationResults;
+                    for (let i = 0, s = globalValidators.length; i < s; i++) {
+                        let validator = globalValidators[i];
+                        let validationResult = (await validator.apply(this, args)) || [];
+                        validationResult = Array.isArray(validationResult) ?
+                            validationResult : [validationResult];
+
+                        Array.prototype.push.apply(
+                            globalValidationResults,
+                            validationResult
+                        );
+                    }
+                }
+                for (let i = 0, s = validators.length; i < s; i++) {
+                    let validator = validators[i];
+                    let validationResult = (await validator.apply(this, args)) || [];
+                    validationResult = Array.isArray(validationResult) ? validationResult : [validationResult];
+
+                    Array.prototype.push.apply(
+                        validationResults,
+                        validationResult
+                    );
+                }
+            }
+
+            let resolveOutput = await resolve.apply(this, args);
+            let result = getResolveValidationResult(resolveOutput, validity);
+
+            return result;
+        } catch (e) {
+            if (config.wrapErrors) {
+                throw config.unhandledErrorWrapper(e);
+            }
+
+            throw e;
+        }
+    };
+}
+
+function validateAndProfileFieldResolution(
+    field: any,
+    config: ValidityConfig,
+    resolve: Function
+) {
+    return async function (...args: any[]) {
         try {
             // profiling start time
             var pst = Date.now();
@@ -171,7 +256,7 @@ function wrapField(
             const eet = Date.now();
 
             try {
-                if (validity && config.enableProfiling) {
+                if (validity) {
                     storeProfilingInfo(validity, ast.path, {
                         name: field.name,
                         validation: (vet - pst),
