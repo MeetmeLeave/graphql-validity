@@ -34,7 +34,6 @@ import {
     storeProfilingInfo
 } from "./profiling";
 import {
-    getResolveValidationResult,
     getValidationResults,
     getValidators
 } from "./validation";
@@ -138,26 +137,20 @@ function validateFieldResolution(
                 let validators = getValidators(field, parentTypeName, validity);
 
                 const result = processValidators(validators, validationResults, args);
-
                 if (result && result.then) {
-                    return new Promise((resolve, reject) => {
-                        resolve(resolver.apply(this, args));
+                    return new Promise((resolve: Function) => {
+                        result.then(() => {
+                            resolve(resolver.apply(this, args));
+                        }).catch(e => {
+                            processError(e, config);
+                        });
                     });
                 }
             }
 
             return resolver.apply(this, args);
-
-            // let resolveOutput = await resolver.apply(this, args);
-            // let result = getResolveValidationResult(resolveOutput, validity);
-            //
-            // return result;
         } catch (e) {
-            if (config.wrapErrors) {
-                throw config.unhandledErrorWrapper(e);
-            }
-
-            throw e;
+            processError(e, config);
         }
     };
 }
@@ -244,8 +237,7 @@ function validateAndProfileFieldResolution(
 
             // validation end time
             const vet = Date.now();
-            let resolveOutput = await resolve.apply(this, args);
-            let result = getResolveValidationResult(resolveOutput, validity);
+            let result = await resolve.apply(this, args);
 
             // execution end time
             const eet = Date.now();
@@ -274,6 +266,14 @@ function validateAndProfileFieldResolution(
             throw e;
         }
     };
+}
+
+function processError(error: Error, config: ValidityConfig) {
+    if (config.wrapErrors) {
+        throw config.unhandledErrorWrapper(error);
+    }
+
+    throw error;
 }
 
 /**

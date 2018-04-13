@@ -36,14 +36,6 @@ export declare type ValidityConfig = {
     profilingResultHandler?: (profilingResult: any) => void;
 }
 
-// Provides ability to push additional validation from resolve function to validation errors array
-export class DataValidationResult {
-    // Normal data output
-    data: any;
-    // Validation errors
-    errors: Array<Error>;
-}
-
 // Error object, which must path through error masking
 export class ValidityError extends Error {
     constructor(message) {

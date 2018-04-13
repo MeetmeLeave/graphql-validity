@@ -5,10 +5,6 @@ const {
     GraphQLList
 } = require('graphql');
 
-const {
-    DataValidationResult
-} = require('../../lib/index');
-
 const TestType = new GraphQLObjectType({
     name: 'TestType',
     fields: {
@@ -38,16 +34,14 @@ const TestType2 = new GraphQLObjectType({
         first: {
             type: GraphQLString,
             resolve(obj) {
+                throw Error('First field failure');
                 return obj.first;
             }
         },
         second: {
             type: GraphQLString,
             resolve(obj) {
-                let result = new DataValidationResult();
-                result.data = obj.first;
-                result.errors = [new Error('111111111111'), new Error('2222222')];
-                return result;
+                return obj.first;
             }
         },
         third: {

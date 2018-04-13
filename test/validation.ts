@@ -3,12 +3,10 @@ import { expect } from 'chai';
 import {
     FieldValidationDefinitions,
     getResponseValidationResults,
-    getResolveValidationResult,
     getValidationResults,
     getValidators,
     applyValidation
 } from '../src/validation';
-import { DataValidationResult } from '../src/helpers';
 
 describe('validation', () => {
     describe('getValidators', () => {
@@ -94,44 +92,6 @@ describe('validation', () => {
             const data = { data: {}, errors: [new Error('test3')] };
             getResponseValidationResults(validity, data);
             expect(data.errors.length).to.equal(3);
-        });
-    });
-
-    describe('getResolveValidationResult', () => {
-        it('should return resolve output, if DataValidationResult wasn\'t used', () => {
-            var output = { data: 'test' };
-            const validationError = new Error('test2');
-            const globalError = new Error('test1');
-            const validity = {
-                ___globalValidationResultsCaptured: false,
-                ___validationResults: [validationError, globalError]
-            };
-
-            var result = getResolveValidationResult(output, validity);
-
-            expect(result).to.be.equal(output);
-        });
-
-        it('should return resolve output, if validation object wasn\'t passed', () => {
-            var output = new DataValidationResult();
-            output.data = { data: 'test' };
-            var result = getResolveValidationResult(output, null);
-
-            expect(result).to.be.equal(output.data);
-        });
-
-        it('should add validation errors from resolve to the validation output', () => {
-            var output = new DataValidationResult();
-            output.data = { data: 'test' };
-            output.errors = [new Error('test3')];
-            const validationError = new Error('test2');
-            const globalError = new Error('test1');
-            const validity = {
-                ___validationResults: [validationError, globalError]
-            };
-
-            getResolveValidationResult(output, validity);
-            expect(validity.___validationResults.length).to.be.equal(3);
         });
     });
 });

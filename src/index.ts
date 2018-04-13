@@ -23,5 +23,5 @@
  */
 
 export * from './schema-wrapper';
-export { DataValidationResult, ValidityError } from './helpers';
+export { ValidityError } from './helpers';
 export { FieldValidationDefinitions } from './validation';

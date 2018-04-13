@@ -39,10 +39,10 @@ function validateSomeTestMutationEmptyReturn(...args) {
 
 function specialThird(...args) {
     return new Promise((resolve, reject) => {
-        // setTimeout(() => {
-        //     resolve(new ValidityError('Special third failed!'));
-        // }, 250)
-        resolve(new ValidityError('Special third failed!'));
+        setTimeout(() => {
+            resolve(new ValidityError('Special third failed!'));
+        }, 250)
+        // resolve(new ValidityError('Special third failed!'));
     });
 }
 
@@ -56,7 +56,7 @@ FieldValidationDefinitions['Mutation:testMutation'] = [validateSomeTestMutation]
 FieldValidationDefinitions['TestType:fourth'] = [specialFourth, specialFourth];
 FieldValidationDefinitions['TestType:fifth'] = [validateSomeTestMutationEmptyReturn];
 // FieldValidationDefinitions['TestType2:first'] = [validateSomeTestThing];
-// FieldValidationDefinitions['TestType2:second'] = [validateSomeTestThing];
+FieldValidationDefinitions['TestType2:second'] = [validateSomeTestThing];
 FieldValidationDefinitions['TestType2:third'] = [specialThird];
 
 wrapResolvers(schema, {
