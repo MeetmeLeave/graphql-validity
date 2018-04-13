@@ -138,11 +138,18 @@ function validateFieldResolution(
 
                 const result = processValidators(validators, validationResults, args);
                 if (result && result.then) {
-                    return new Promise((resolve: Function) => {
+                    return new Promise((
+                        resolve: Function,
+                        reject: Function
+                    ) => {
                         result.then(() => {
                             resolve(resolver.apply(this, args));
                         }).catch(e => {
-                            processError(e, config);
+                            if (config.wrapErrors) {
+                                reject(config.unhandledErrorWrapper(e));
+                            }
+
+                            reject(e);
                         });
                     });
                 }
@@ -179,19 +186,22 @@ function processValidators(
     }
 
     if (promises.length) {
-        return new Promise(async (resolve, reject) => {
-            for (let promise of promises) {
-                let validationResult = (await promise) || [];
-                validationResult = Array.isArray(validationResult) ? validationResult : [validationResult];
+        return handleValidationPromises(promises, validationResults);
+    }
+}
 
-                Array.prototype.push.apply(
-                    validationResults,
-                    validationResult
-                );
-            }
+async function handleValidationPromises(
+    promises: any[],
+    validationResults: any[]
+) {
+    for (let promise of promises) {
+        let validationResult = (await promise) || [];
+        validationResult = Array.isArray(validationResult) ? validationResult : [validationResult];
 
-            resolve();
-        });
+        Array.prototype.push.apply(
+            validationResults,
+            validationResult
+        );
     }
 }
 
