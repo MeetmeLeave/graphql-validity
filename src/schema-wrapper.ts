@@ -26,6 +26,7 @@
  * Contains configuration options for the main function
  */
 import {
+    FieldValidationObject,
     onUnhandledError,
     ValidityConfig
 } from "./helpers";
@@ -105,9 +106,7 @@ function wrapField(
 
     field[Processed] = true;
 
-    field.resolve = config.enableProfiling ?
-        validateAndProfileFieldResolution(field, config, resolve) :
-        validateFieldResolution(field, config, resolve);
+    field.resolve = validateFieldResolution(field, config, resolve);
 }
 
 function validateFieldResolution(
@@ -117,24 +116,28 @@ function validateFieldResolution(
 ) {
     return function (...args: any[]) {
         try {
-            let parentTypeName;
-            let ast;
-            let validity;
+            const requestContext: FieldValidationObject = { fieldName: field.name };
+
+            if (config.enableProfiling) {
+                // profiling start time
+                requestContext.pst = Date.now();
+            }
+
             for (let i = 0, s = args.length; i < s; i++) {
                 let arg = args[i];
                 if (arg && arg.rootValue && arg.rootValue.__graphQLValidity) {
-                    validity = arg.rootValue.__graphQLValidity;
+                    requestContext.validity = arg.rootValue.__graphQLValidity;
                 }
 
                 if (arg && arg.parentType) {
-                    ast = arg;
-                    parentTypeName = arg.parentType;
+                    requestContext.astPath = arg.path;
+                    requestContext.parentTypeName = arg.parentType;
                 }
             }
 
-            if (validity) {
-                let validationResults = getValidationResults(validity);
-                let validators = getValidators(field, parentTypeName, validity);
+            if (requestContext.validity) {
+                let validationResults = getValidationResults(requestContext.validity);
+                let validators = getValidators(field, requestContext.parentTypeName, requestContext.validity);
 
                 const result = processValidators(validators, validationResults, args);
                 if (result && result.then) {
@@ -143,6 +146,11 @@ function validateFieldResolution(
                         reject: Function
                     ) => {
                         result.then(() => {
+                            if (config.enableProfiling) {
+                                // validation end time
+                                requestContext.vet = Date.now();
+                            }
+
                             resolve(resolver.apply(this, args));
                         }).catch(e => {
                             if (config.wrapErrors) {
@@ -153,13 +161,52 @@ function validateFieldResolution(
                         });
                     });
                 }
+                else {
+                    if (config.enableProfiling) {
+                        // validation end time
+                        requestContext.vet = Date.now();
+                    }
+                }
             }
 
-            return resolver.apply(this, args);
+            const result = resolver.apply(this, args);
+
+            if (config.enableProfiling) {
+                if (result && result.then) {
+                    result.then(() => {
+                        processProfiling(requestContext);
+                    });
+                }
+                else {
+                    processProfiling(requestContext);
+                }
+            }
+
+            return result;
         } catch (e) {
             processError(e, config);
         }
     };
+}
+
+function processProfiling(requestContext) {
+    // execution end time
+    requestContext.eet = Date.now();
+
+    try {
+        if (requestContext.validity) {
+            storeProfilingInfo(requestContext.validity, requestContext.astpath, {
+                name: requestContext.fieldName,
+                validation: (requestContext.vet - requestContext.pst),
+                execution: (requestContext.eet - requestContext.pst),
+                fieldsExecution: 0,
+                totalExecution: (requestContext.eet - requestContext.pst) - (requestContext.vet - requestContext.pst)
+            });
+        }
+    }
+    catch (err) {
+        console.error('Profiling failed!', err);
+    }
 }
 
 function processValidators(
@@ -203,79 +250,6 @@ async function handleValidationPromises(
             validationResult
         );
     }
-}
-
-function validateAndProfileFieldResolution(
-    field: any,
-    config: ValidityConfig,
-    resolve: Function
-) {
-    return async function (...args: any[]) {
-        try {
-            // profiling start time
-            var pst = Date.now();
-            let parentTypeName;
-            let ast;
-            let validity;
-            for (let i = 0, s = args.length; i < s; i++) {
-                let arg = args[i];
-                if (arg && arg.rootValue && arg.rootValue.__graphQLValidity) {
-                    validity = arg.rootValue.__graphQLValidity;
-                }
-
-                if (arg && arg.parentType) {
-                    ast = arg;
-                    parentTypeName = arg.parentType;
-                }
-            }
-
-            if (validity) {
-                let validationResults = getValidationResults(validity);
-                let validators = getValidators(field, parentTypeName, validity);
-
-                for (let i = 0, s = validators.length; i < s; i++) {
-                    let validator = validators[i];
-                    let validationResult = (await validator.apply(this, args)) || [];
-                    validationResult = Array.isArray(validationResult) ? validationResult : [validationResult];
-
-                    Array.prototype.push.apply(
-                        validationResults,
-                        validationResult
-                    );
-                }
-            }
-
-            // validation end time
-            const vet = Date.now();
-            let result = await resolve.apply(this, args);
-
-            // execution end time
-            const eet = Date.now();
-
-            try {
-                if (validity) {
-                    storeProfilingInfo(validity, ast.path, {
-                        name: field.name,
-                        validation: (vet - pst),
-                        execution: (eet - pst),
-                        fieldsExecution: 0,
-                        totalExecution: (eet - pst) - (vet - pst)
-                    });
-                }
-            }
-            catch (err) {
-                console.error('Profiling failed!', err);
-            }
-
-            return result;
-        } catch (e) {
-            if (config.wrapErrors) {
-                throw config.unhandledErrorWrapper(e);
-            }
-
-            throw e;
-        }
-    };
 }
 
 function processError(error: Error, config: ValidityConfig) {

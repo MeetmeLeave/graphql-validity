@@ -36,6 +36,16 @@ export declare type ValidityConfig = {
     profilingResultHandler?: (profilingResult: any) => void;
 }
 
+export declare type FieldValidationObject = {
+    fieldName: string;
+    parentTypeName?: string;
+    validity?: any;
+    astPath?: string;
+    pst?: Number;
+    vet?: Number;
+    eet?: Number;
+}
+
 // Error object, which must path through error masking
 export class ValidityError extends Error {
     constructor(message) {
