@@ -60,7 +60,7 @@ FieldValidationDefinitions['TestType2:second'] = [validateSomeTestThing];
 FieldValidationDefinitions['TestType2:third'] = [specialThird];
 
 wrapResolvers(schema, {
-    wrapErrors: false,
+    wrapErrors: true,
     enableProfiling: false,
     profilingResultHandler: (profilingData, __graphQLValidityRequestId) => {
         // console.log(JSON.stringify(profilingData, null, 2));

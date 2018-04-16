@@ -34,8 +34,10 @@ const TestType2 = new GraphQLObjectType({
         first: {
             type: GraphQLString,
             resolve(obj) {
-                throw Error('First field failure');
-                return obj.first;
+                return new Promise((resolve, reject) => {
+                    reject('First field failure');
+                    return obj.first;
+                });
             }
         },
         second: {
@@ -319,196 +321,196 @@ const schema = new GraphQLSchema({
                         resolve({
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
-                        },{
+                        }, {
                             first: 'dsfs',
                             second: 'dsfsdf'
                         });

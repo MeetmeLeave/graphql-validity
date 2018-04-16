@@ -151,6 +151,9 @@ function validateFieldResolution(
                                 requestContext.vet = Date.now();
                             }
 
+                            // TODO: handle profiling and errors for this case as well
+                            // TODO: move errors wrapping to the top level, to minimize amount of promises!
+                            // Work in progress
                             resolve(resolver.apply(this, args));
                         }).catch(e => {
                             if (config.wrapErrors) {
@@ -171,19 +174,33 @@ function validateFieldResolution(
 
             const result = resolver.apply(this, args);
 
-            if (config.enableProfiling) {
-                if (result && result.then) {
-                    result.then(() => {
-                        processProfiling(requestContext);
+            if (result && result.then) {
+                return new Promise((
+                    resolve: Function,
+                    reject: Function
+                ) => {
+                    result.then((result) => {
+                        if (config.enableProfiling) {
+                            processProfiling(requestContext);
+                        }
+                        resolve(result);
+                    }).catch(e => {
+                        if (config.wrapErrors) {
+                            reject(config.unhandledErrorWrapper(e));
+                        }
+
+                        reject(e);
                     });
-                }
-                else {
-                    processProfiling(requestContext);
-                }
+                });
+            }
+            else {
+                processProfiling(requestContext);
             }
 
             return result;
-        } catch (e) {
+        }
+        catch
+            (e) {
             processError(e, config);
         }
     };
