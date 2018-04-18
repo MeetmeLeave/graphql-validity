@@ -174,9 +174,7 @@ function validateFieldResolution(
                     reject: Function
                 ) => {
                     result.then((result) => {
-                        if (config.enableProfiling) {
-                            processProfiling(requestContext);
-                        }
+                        processProfiling(requestContext);
                         resolve(result);
                     }).catch(e => {
                         reject(e);

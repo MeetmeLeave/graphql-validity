@@ -61,10 +61,10 @@ FieldValidationDefinitions['TestType2:third'] = [specialThird];
 
 wrapResolvers(schema, {
     wrapErrors: true,
-    enableProfiling: false,
+    enableProfiling: true,
     profilingResultHandler: (profilingData, __graphQLValidityRequestId) => {
-        // console.log(JSON.stringify(profilingData, null, 2));
-        // console.log(__graphQLValidityRequestId);
+        console.log(JSON.stringify(profilingData, null, 2));
+        console.log(__graphQLValidityRequestId);
     }
 });
 
