@@ -40,7 +40,7 @@ export const FieldValidationDefinitions: any = {};
 export function getResponseValidationResults(validity: any, data: any) {
     data.errors =
         (data.errors || [])
-            .map((err)=>{
+            .map((err) => {
                 return processError(err, validity.config);
             })
             .concat(
@@ -53,9 +53,14 @@ export function getResponseValidationResults(validity: any, data: any) {
             );
 }
 
-function processError(error: Error, config: ValidityConfig) {
+function processError(error: any, config: ValidityConfig) {
     if (config && config.wrapErrors) {
-        return config.unhandledErrorWrapper(error);
+        const result = config.unhandledErrorWrapper(error);
+        return {
+            message: result.message,
+            path: error.path,
+            location: error.location
+        };
     }
 
     return error;
