@@ -115,58 +115,57 @@ function validateFieldResolution(
     resolver: Function
 ) {
     return function (...args: any[]) {
-        // try {
-            const requestContext: FieldValidationObject = { fieldName: field.name };
+        const requestContext: FieldValidationObject = { fieldName: field.name };
 
-            if (config.enableProfiling) {
-                // profiling start time
-                requestContext.pst = Date.now();
+        if (config.enableProfiling) {
+            // profiling start time
+            requestContext.pst = Date.now();
+        }
+
+        for (let i = 0, s = args.length; i < s; i++) {
+            let arg = args[i];
+            if (arg && arg.rootValue && arg.rootValue.__graphQLValidity) {
+                arg.rootValue.__graphQLValidity.config = config;
+                requestContext.validity = arg.rootValue.__graphQLValidity;
             }
 
-            for (let i = 0, s = args.length; i < s; i++) {
-                let arg = args[i];
-                if (arg && arg.rootValue && arg.rootValue.__graphQLValidity) {
-                    arg.rootValue.__graphQLValidity.config = config;
-                    requestContext.validity = arg.rootValue.__graphQLValidity;
-                }
-
-                if (arg && arg.parentType) {
-                    requestContext.astPath = arg.path;
-                    requestContext.parentTypeName = arg.parentType;
-                }
+            if (arg && arg.parentType) {
+                requestContext.astPath = arg.path;
+                requestContext.parentTypeName = arg.parentType;
             }
+        }
 
-            if (requestContext.validity) {
-                let validationResults = getValidationResults(requestContext.validity);
-                let validators = getValidators(field, requestContext.parentTypeName, requestContext.validity);
+        if (requestContext.validity) {
+            let validationResults = getValidationResults(requestContext.validity);
+            let validators = getValidators(field, requestContext.parentTypeName, requestContext.validity);
 
-                const result = processValidators(validators, validationResults, args);
-                if (result && result.then) {
-                    return new Promise((
-                        resolve: Function,
-                        reject: Function
-                    ) => {
-                        result.then(() => {
-                            if (config.enableProfiling) {
-                                // validation end time
-                                requestContext.vet = Date.now();
-                            }
+            const result = processValidators(validators, validationResults, args);
+            if (result && result.then) {
+                return new Promise((
+                    resolve: Function,
+                    reject: Function
+                ) => {
+                    result.then(() => {
+                        if (config.enableProfiling) {
+                            // validation end time
+                            requestContext.vet = Date.now();
+                        }
 
-                            resolve(resolver.apply(this, args));
-                        }).catch(e => {
-                            reject(e);
-                        });
+                        resolve(resolver.apply(this, args));
+                    }).catch(e => {
+                        reject(e);
                     });
-                }
-                else {
-                    if (config.enableProfiling) {
-                        // validation end time
-                        requestContext.vet = Date.now();
-                    }
+                });
+            }
+            else {
+                if (config.enableProfiling) {
+                    // validation end time
+                    requestContext.vet = Date.now();
                 }
             }
+        }
 
-            const result = resolver.apply(this, args);
+        const result = resolver.apply(this, args);
 
         if (config.enableProfiling) {
             if (result && result.then) {
@@ -189,12 +188,7 @@ function validateFieldResolution(
             }
         }
 
-            return result;
-        // }
-        // catch
-        //     (e) {
-        //     processError(e, config);
-        // }
+        return result;
     };
 }
 

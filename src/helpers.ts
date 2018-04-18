@@ -67,7 +67,7 @@ export function onUnhandledError(error: Error) {
 
     const id = uuid();
 
-    console.error(`Unhandled error occured with id:${id}, error:${error}`);
+    console.error(`Unhandled error occured with id:${id}, error:${JSON.stringify(error, null, 2)}`);
 
     return new Error(`An internal error occured, with following id:${id}, please contact Administrator!`)
 }
