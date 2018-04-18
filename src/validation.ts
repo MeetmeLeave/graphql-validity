@@ -23,6 +23,9 @@
  */
 
 import { PROFILING_DEBOUNCE_TIME } from "./magic-values";
+import {
+    ValidityConfig
+} from "./helpers";
 
 /* An object which stores all validator functions
     required to be executed during graphql request */
@@ -37,6 +40,9 @@ export const FieldValidationDefinitions: any = {};
 export function getResponseValidationResults(validity: any, data: any) {
     data.errors =
         (data.errors || [])
+            .map((err)=>{
+                return processError(err, validity.config);
+            })
             .concat(
                 validity.___validationResults.map(
                     error => {
@@ -45,6 +51,14 @@ export function getResponseValidationResults(validity: any, data: any) {
                         };
                     })
             );
+}
+
+function processError(error: Error, config: ValidityConfig) {
+    if (config && config.wrapErrors) {
+        return config.unhandledErrorWrapper(error);
+    }
+
+    return error;
 }
 
 /**

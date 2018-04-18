@@ -115,7 +115,7 @@ function validateFieldResolution(
     resolver: Function
 ) {
     return function (...args: any[]) {
-        try {
+        // try {
             const requestContext: FieldValidationObject = { fieldName: field.name };
 
             if (config.enableProfiling) {
@@ -126,6 +126,7 @@ function validateFieldResolution(
             for (let i = 0, s = args.length; i < s; i++) {
                 let arg = args[i];
                 if (arg && arg.rootValue && arg.rootValue.__graphQLValidity) {
+                    arg.rootValue.__graphQLValidity.config = config;
                     requestContext.validity = arg.rootValue.__graphQLValidity;
                 }
 
@@ -151,15 +152,8 @@ function validateFieldResolution(
                                 requestContext.vet = Date.now();
                             }
 
-                            // TODO: handle profiling and errors for this case as well
-                            // TODO: move errors wrapping to the top level, to minimize amount of promises!
-                            // Work in progress
                             resolve(resolver.apply(this, args));
                         }).catch(e => {
-                            if (config.wrapErrors) {
-                                reject(config.unhandledErrorWrapper(e));
-                            }
-
                             reject(e);
                         });
                     });
@@ -174,6 +168,7 @@ function validateFieldResolution(
 
             const result = resolver.apply(this, args);
 
+        if (config.enableProfiling) {
             if (result && result.then) {
                 return new Promise((
                     resolve: Function,
@@ -185,10 +180,6 @@ function validateFieldResolution(
                         }
                         resolve(result);
                     }).catch(e => {
-                        if (config.wrapErrors) {
-                            reject(config.unhandledErrorWrapper(e));
-                        }
-
                         reject(e);
                     });
                 });
@@ -196,13 +187,14 @@ function validateFieldResolution(
             else {
                 processProfiling(requestContext);
             }
+        }
 
             return result;
-        }
-        catch
-            (e) {
-            processError(e, config);
-        }
+        // }
+        // catch
+        //     (e) {
+        //     processError(e, config);
+        // }
     };
 }
 
@@ -269,13 +261,13 @@ async function handleValidationPromises(
     }
 }
 
-function processError(error: Error, config: ValidityConfig) {
-    if (config.wrapErrors) {
-        throw config.unhandledErrorWrapper(error);
-    }
-
-    throw error;
-}
+// function processError(error: Error, config: ValidityConfig) {
+//     if (config.wrapErrors) {
+//         throw config.unhandledErrorWrapper(error);
+//     }
+//
+//     throw error;
+// }
 
 /**
  * Wraps each field of the GraphQLObjectType entity
