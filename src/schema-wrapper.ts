@@ -201,12 +201,14 @@ function processProfiling(requestContext: FieldValidationObject) {
 
     try {
         if (requestContext.validity) {
+            const validation = <number>requestContext.vet - <number>requestContext.pst;
+            const execution = <number>requestContext.eet - <number>requestContext.vet;
             storeProfilingInfo(requestContext.validity, requestContext.astPath, {
                 name: requestContext.fieldName,
-                validation: (<number>requestContext.vet - <number>requestContext.pst),
-                execution: (<number>requestContext.eet - <number>requestContext.pst),
+                validation,
+                execution,
                 fieldsExecution: 0,
-                totalExecution: (<number>requestContext.eet - <number>requestContext.pst) - (<number>requestContext.vet - <number>requestContext.pst)
+                totalExecution: validation + execution
             });
         }
     }
