@@ -109,6 +109,15 @@ function wrapField(
     field.resolve = validateFieldResolution(field, config, resolve);
 }
 
+/**
+ * Creates new field resolver for a given graphql field node
+ *
+ * @param field - field node which gets resolver replaced
+ * @param {ValidityConfig} config - config options for validation
+ * @param {Function} resolver - original resolver function
+ *
+ * @returns {(...args: any[]) => (Promise<any> | any)} - new resolver function
+ */
 function validateFieldResolution(
     field: any,
     config: ValidityConfig,
@@ -195,6 +204,11 @@ function validateFieldResolution(
     };
 }
 
+/**
+ * Creates profiling data using process context for a field
+ *
+ * @param {FieldValidationObject} requestContext - data gathered during field validation and execution
+ */
 function processProfiling(requestContext: FieldValidationObject) {
     // execution end time
     requestContext.eet = Date.now();
@@ -217,6 +231,15 @@ function processProfiling(requestContext: FieldValidationObject) {
     }
 }
 
+/**
+ * Validator function executor
+ *
+ * @param {Function[]} validators - array of validation functions
+ * @param {any[]} validationResults - static array of validation results
+ * @param {any[]} args - original resolver arguments
+ *
+ * @returns {Promise<void>} - return promise if at least one validator was returning promise
+ */
 function processValidators(
     validators: Function[],
     validationResults: any[],
@@ -245,6 +268,14 @@ function processValidators(
     }
 }
 
+/**
+ * Synchronises validator promises execution
+ *
+ * @param {any[]} promises - array of validator promises
+ * @param {any[]} validationResults - static array of validation results
+ *
+ * @returns {Promise<void>} - general promise for all validator promises
+ */
 async function handleValidationPromises(
     promises: any[],
     validationResults: any[]

@@ -53,6 +53,13 @@ export function getResponseValidationResults(validity: any, data: any) {
             );
 }
 
+/**
+ * Masks errors if requests, other way returns original graphql error object
+ *
+ * @param error - graphql error object
+ * @param {ValidityConfig} config - config - setup options for the wrapper function
+ * @returns {any} - graphql error object
+ */
 function processError(error: any, config: ValidityConfig) {
     if (config && config.wrapErrors) {
         const result = config.unhandledErrorWrapper(error);

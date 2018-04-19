@@ -36,13 +36,21 @@ export declare type ValidityConfig = {
     profilingResultHandler?: (profilingResult: any) => void;
 }
 
+// Type used inside the field wrapper function to store processing information
 export declare type FieldValidationObject = {
+    // name of the field being validated
     fieldName: string;
+    // name of the parent type for the field being validated
     parentTypeName?: string;
+    // validity object used for graphql request to store validation results
     validity?: any;
+    // path inside the AST tree used by grapql engine
     astPath?: string;
+    // profiling start time
     pst?: Number;
+    // validation end time
     vet?: Number;
+    // execution end time
     eet?: Number;
 }
 
@@ -60,7 +68,7 @@ export class ValidityError extends Error {
  * @param {Error} error - unhandled error object
  * @returns {Error} - error object with critical data hidden
  */
-export function onUnhandledError(error: Error) {
+export function onUnhandledError(error: Error): Error {
     if (error.name === 'ValidityError') {
         return error;
     }
