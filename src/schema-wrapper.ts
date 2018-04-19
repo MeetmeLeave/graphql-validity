@@ -151,7 +151,20 @@ function validateFieldResolution(
                             requestContext.vet = Date.now();
                         }
 
-                        resolve(resolver.apply(this, args));
+                        const result = resolver.apply(this, args);
+
+                        if (config.enableProfiling) {
+                            if (result && result.then) {
+                                result.then(() => {
+                                    processProfiling(requestContext);
+                                })
+                            }
+                            else {
+                                processProfiling(requestContext);
+                            }
+                        }
+
+                        resolve(result);
                     }).catch(e => {
                         reject(e);
                     });
@@ -169,16 +182,8 @@ function validateFieldResolution(
 
         if (config.enableProfiling) {
             if (result && result.then) {
-                return new Promise((
-                    resolve: Function,
-                    reject: Function
-                ) => {
-                    result.then((result) => {
-                        processProfiling(requestContext);
-                        resolve(result);
-                    }).catch(e => {
-                        reject(e);
-                    });
+                result.then(() => {
+                    processProfiling(requestContext);
                 });
             }
             else {
@@ -190,18 +195,18 @@ function validateFieldResolution(
     };
 }
 
-function processProfiling(requestContext) {
+function processProfiling(requestContext: FieldValidationObject) {
     // execution end time
     requestContext.eet = Date.now();
 
     try {
         if (requestContext.validity) {
-            storeProfilingInfo(requestContext.validity, requestContext.astpath, {
+            storeProfilingInfo(requestContext.validity, requestContext.astPath, {
                 name: requestContext.fieldName,
-                validation: (requestContext.vet - requestContext.pst),
-                execution: (requestContext.eet - requestContext.pst),
+                validation: (<number>requestContext.vet - <number>requestContext.pst),
+                execution: (<number>requestContext.eet - <number>requestContext.pst),
                 fieldsExecution: 0,
-                totalExecution: (requestContext.eet - requestContext.pst) - (requestContext.vet - requestContext.pst)
+                totalExecution: (<number>requestContext.eet - <number>requestContext.pst) - (<number>requestContext.vet - <number>requestContext.pst)
             });
         }
     }
@@ -252,14 +257,6 @@ async function handleValidationPromises(
         );
     }
 }
-
-// function processError(error: Error, config: ValidityConfig) {
-//     if (config.wrapErrors) {
-//         throw config.unhandledErrorWrapper(error);
-//     }
-//
-//     throw error;
-// }
 
 /**
  * Wraps each field of the GraphQLObjectType entity

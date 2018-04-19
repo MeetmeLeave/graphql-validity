@@ -41,13 +41,18 @@ function specialThird(...args) {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
             resolve(new ValidityError('Special third failed!'));
-        }, 250)
+        }, 2500);
         // resolve(new ValidityError('Special third failed!'));
     });
 }
 
 function specialFourth(...args) {
-    return [new Error('Special fourth failed!')];
+    // return [new Error('Special fourth failed!')];
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve([new Error('Special fourth failed!')])
+        }, 1300);
+    });
 }
 
 FieldValidationDefinitions['$'] = [applyGlobally];
