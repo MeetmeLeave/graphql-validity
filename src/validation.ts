@@ -47,7 +47,7 @@ export function getResponseValidationResults(validity: any, data: any) {
                 validity.___validationResults.map(
                     error => {
                         return {
-                            message: error.message
+                            message: processError(error, validity.config)
                         };
                     })
             );
