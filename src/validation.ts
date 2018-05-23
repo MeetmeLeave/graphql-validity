@@ -143,9 +143,10 @@ export function applyValidation(
 ) {
     let result = JSON.parse(data);
 
+    const validity = req.__graphQLValidity;
+    getResponseValidationResults(validity, result);
+
     if (result.data) {
-        const validity = req.__graphQLValidity;
-        getResponseValidationResults(validity, result);
         setTimeout(() => {
             const profilingData = validity.___profilingData;
             profilingResultHandler(profilingData, req.__graphQLValidityRequestId);
