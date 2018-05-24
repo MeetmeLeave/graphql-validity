@@ -149,12 +149,10 @@ export function applyValidation(
     const validity = req.__graphQLValidity;
     getResponseValidationResults(validity, result);
 
-    if (result.data) {
-        setTimeout(() => {
-            const profilingData = validity.___profilingData;
-            profilingResultHandler(profilingData, req.__graphQLValidityRequestId);
-        }, PROFILING_DEBOUNCE_TIME);
+    setTimeout(() => {
+        const profilingData = validity.___profilingData;
+        profilingResultHandler(profilingData, req.__graphQLValidityRequestId);
+    }, PROFILING_DEBOUNCE_TIME);
 
-        return JSON.stringify(result);
-    }
+    return JSON.stringify(result);
 }
