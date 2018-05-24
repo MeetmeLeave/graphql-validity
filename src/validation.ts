@@ -38,19 +38,22 @@ export const FieldValidationDefinitions: any = {};
  * @param data - result of graphql call
  */
 export function getResponseValidationResults(validity: any, data: any) {
-    data.errors =
-        (data.errors || [])
-            .map((err) => {
-                return processError(err, validity.config);
-            })
-            .concat(
-                validity.___validationResults.map(
-                    error => {
-                        return {
-                            message: processError(error, validity.config).message
-                        };
-                    })
-            );
+    if (data.errors || (validity.___validationResults && validity.___validationResults.length)) {
+        const originalErrors = data.errors || [];
+        data.errors =
+            (Array.isArray(originalErrors) ? originalErrors : [originalErrors])
+                .map((err) => {
+                    return processError(err, validity.config);
+                })
+                .concat(
+                    validity.___validationResults.map(
+                        error => {
+                            return {
+                                message: processError(error, validity.config).message
+                            };
+                        })
+                );
+    }
 }
 
 /**
