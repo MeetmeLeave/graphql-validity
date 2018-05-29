@@ -57,7 +57,8 @@ export declare type FieldValidationObject = {
 // Error object, which must path through error masking
 export class ValidityError extends Error {
     constructor(message) {
-        super(message);
+        const resultingMessage = '_Validity_' + message;
+        super(resultingMessage);
         this.name = "ValidityError";
     }
 }
@@ -69,7 +70,8 @@ export class ValidityError extends Error {
  * @returns {Error} - error object with critical data hidden
  */
 export function onUnhandledError(error: Error): Error {
-    if (error.name === 'ValidityError') {
+    if (error.name === 'ValidityError' || error.message.indexOf('_Validity_') >= 0) {
+        error.message = error.message.slice(0, 10);
         return error;
     }
 
