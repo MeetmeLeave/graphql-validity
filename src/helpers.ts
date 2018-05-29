@@ -70,11 +70,6 @@ export class ValidityError extends Error {
  * @returns {Error} - error object with critical data hidden
  */
 export function onUnhandledError(error: Error): Error {
-    if (error.name === 'ValidityError' || error.message.indexOf('_Validity_') >= 0) {
-        error.message = error.message.slice(0, 10);
-        return error;
-    }
-
     const id = uuid();
 
     console.error(`Unhandled error occured with id:${id}, error:${JSON.stringify(error, null, 2)}`);
