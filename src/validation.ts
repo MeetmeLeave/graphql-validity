@@ -65,7 +65,7 @@ export function getResponseValidationResults(validity: any, data: any) {
  */
 function processError(error: any, config: ValidityConfig) {
     if (error.name === 'ValidityError' || error.message.indexOf('_Validity_') >= 0) {
-        error.message = error.message.slice(0, 10);
+        error.message = error.message.slice(10);
         return error;
     }
 
