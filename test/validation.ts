@@ -29,9 +29,9 @@ describe('validation', () => {
     });
 
     describe('applyValidation', () => {
-        it('shouldn\'t return value if result missing data object', () => {
+        it('should return exact value if result missing data object', () => {
             const result = applyValidation({}, '{}', () => {});
-            expect(result).to.be.undefined;
+            expect(result).to.be.equal('{}');
         });
 
         it('should throw JSON parsing error, if data has incorrect format', () => {

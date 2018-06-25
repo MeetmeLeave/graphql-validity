@@ -38,7 +38,7 @@ export const FieldValidationDefinitions: any = {};
  * @param data - result of graphql call
  */
 export function getResponseValidationResults(validity: any, data: any) {
-    if (data.errors || (validity.___validationResults && validity.___validationResults.length)) {
+    if (data.errors || (validity && validity.___validationResults && validity.___validationResults.length)) {
         const originalErrors = data.errors || [];
         data.errors =
             (Array.isArray(originalErrors) ? originalErrors : [originalErrors])
@@ -155,8 +155,10 @@ export function applyValidation(
     getResponseValidationResults(validity, result);
 
     setTimeout(() => {
-        const profilingData = validity.___profilingData;
-        profilingResultHandler(profilingData, req.__graphQLValidityRequestId);
+        if (validity) {
+            const profilingData = validity.___profilingData;
+            profilingResultHandler(profilingData, req.__graphQLValidityRequestId);
+        }
     }, PROFILING_DEBOUNCE_TIME);
 
     return JSON.stringify(result);
