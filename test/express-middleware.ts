@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 
 import { defaultProfilingResultHandler } from '../src/profiling';
-import expressMiddleware from '../src/express-middleware';
+import expressMiddleware from '../lib/express-middleware';
 
 describe('express-middleware', () => {
     let profilingResultHandler: any = {

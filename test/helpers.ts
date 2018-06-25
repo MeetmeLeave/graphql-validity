@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import {
     onUnhandledError,
     ValidityError
-} from '../src/helpers';
+} from '../lib/helpers';
 
 describe('helpers', () => {
     describe('onUnhandledError', () => {

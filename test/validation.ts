@@ -6,7 +6,7 @@ import {
     getValidationResults,
     getValidators,
     applyValidation
-} from '../src/validation';
+} from '../lib/validation';
 
 describe('validation', () => {
     describe('getValidators', () => {

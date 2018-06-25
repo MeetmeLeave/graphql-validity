@@ -8,8 +8,8 @@ import {
     graphQLValidityHapiMiddleware,
     graphQLValidityExpressMiddleware,
     graphQLValidityKoaMiddleware
-} from '../src/schema-wrapper';
-import { ValidityConfig } from "../src/helpers";
+} from '../lib/schema-wrapper';
+import { ValidityConfig } from "../lib/helpers";
 
 describe('schema-wrapper', () => {
     describe('wrapResolvers', () => {

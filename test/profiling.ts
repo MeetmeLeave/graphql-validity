@@ -4,7 +4,7 @@ import * as sinon from 'sinon';
 import {
     storeProfilingInfo,
     defaultProfilingResultHandler
-} from '../src/profiling';
+} from '../lib/profiling';
 
 describe('profiling', () => {
     it('storeProfilingInfo, should add profiling data', () => {
