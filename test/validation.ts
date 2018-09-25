@@ -5,8 +5,12 @@ import {
     getResponseValidationResults,
     getValidationResults,
     getValidators,
-    applyValidation
+    applyValidation,
 } from '../lib/validation';
+
+import {
+    ValidityError
+} from '../lib/helpers';
 
 describe('validation', () => {
     describe('getValidators', () => {
@@ -92,6 +96,39 @@ describe('validation', () => {
             const data = { data: {}, errors: [new Error('test3')] };
             getResponseValidationResults(validity, data);
             expect(data.errors.length).to.equal(3);
+        });
+    });
+
+    describe('processError', () => {
+        it('should return original error, if name is ValidityError or message contains _Validity_', () => {
+            const validationError = new Error('_Validity_ test!');
+            const globalError = new ValidityError('test1');
+            const validity = {
+                ___globalValidationResultsCaptured: false,
+                ___validationResults: [validationError, globalError]
+            };
+
+            const data = { data: {}, errors: [new Error('test3')] };
+            getResponseValidationResults(validity, data);
+            expect(data.errors.length).to.equal(3);
+        });
+
+        it('should wrap errors when wrapErros variable passed in config', () => {
+            const validationError = new Error('test2');
+            const globalError = new Error('test1');
+            const validity = {
+                ___globalValidationResultsCaptured: false,
+                ___validationResults: [validationError, globalError],
+                config: {
+                    wrapErrors: true,
+                    unhandledErrorWrapper: function (err) {return new Error('test');}
+                },
+            };
+
+            const data = { data: {}, errors: [new Error('test3')] };
+            getResponseValidationResults(validity, data);
+            expect(data.errors.length).to.equal(3);
+            expect(data.errors[0].message).to.equal('test');
         });
     });
 });
