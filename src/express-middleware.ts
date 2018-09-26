@@ -89,7 +89,7 @@ export default (profilingResultHandler) => {
                 }
             }
             catch (err) {
-                console.error(err)
+                console.error(err);
             }
             finally {
                 originalFunction.apply(res, Array.from(arguments));
