@@ -1,102 +1,99 @@
-import { expect } from 'chai';
 import * as sinon from 'sinon';
+import { expect } from 'chai';
+import * as validation from '../lib/validation';
 
-import { defaultProfilingResultHandler } from '../src/profiling';
+import { defaultProfilingResultHandler } from '../lib/profiling';
 import expressMiddleware from '../lib/express-middleware';
+
+export function mockModule<T extends { [K: string]: any }>(
+    moduleToMock: T,
+    defaultMockValuesForMock: Partial<{ [K in keyof T]: T[K] }>
+) {
+    return (
+        sandbox: sinon.SinonSandbox,
+        returnOverrides?: Partial<{ [K in keyof T]: T[K] }>
+    ): void => {
+        const functions = Object.keys(moduleToMock);
+        const returns = returnOverrides || {};
+        functions.forEach((f) => {
+            sandbox.stub(moduleToMock, f).callsFake(returns[f] || defaultMockValuesForMock[f]);
+        });
+    };
+}
 
 describe('express-middleware', () => {
     let profilingResultHandler: any = {
         handler: defaultProfilingResultHandler
     };
 
+    let req;
+    let write;
+    let send;
+    let res;
+    let next;
+    let result;
     let resFake;
+    let applyValidationFake;
+    let sandbox: sinon.SinonSandbox;
+
+    beforeEach(() => {
+        resFake = sinon.fake();
+
+        req = { __graphQLValidity: undefined };
+        write = () => {};
+        send = () => {};
+        res = {
+            write,
+            send: resFake
+        };
+        next = () => {};
+
+        applyValidationFake = sinon.fake();
+        const mockValidation = mockModule(validation, {
+            applyValidation: applyValidationFake
+        });
+        sandbox = sinon.createSandbox();
+        mockValidation(sandbox);
+
+        result = expressMiddleware(profilingResultHandler);
+    });
+
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('should return wrapper function', () => {
+        expect(result).to.be.an('function');
+    });
 
     describe('graphQLValidityExpressMiddleware', () => {
-        it('should return wrapper function', () => {
-            const result = expressMiddleware(profilingResultHandler);
-            expect(result).to.be.an('function');
-        });
-
         it('should replace original write and send functions with wrappers and add validity data to request', () => {
-            const req = {};
-            const write = () => {};
-            const send = () => {};
-            const res = {
-                write,
-                send
-            };
-            const next = () => {};
-
-            expressMiddleware(profilingResultHandler)(req, res, next);
+            result(req, res, next);
             expect(res.write).to.not.equal(write);
             expect(res.send).to.not.equal(send);
         });
 
         it('should add validity data to request', () => {
-            const req = {};
-            const write = () => {};
-            const send = () => {};
-            const res = {
-                write,
-                send
-            };
-            const next = () => {};
-
-            expressMiddleware(profilingResultHandler)(req, res, next);
             expect(req.__graphQLValidity).to.not.be.null;
         });
     });
 
     describe('wrapOriginalResponder', () => {
-        afterEach(() => {
-            if (resFake && resFake.restore) {
-                resFake.restore();
-            }
-        });
-
         it('should call original function after execution', () => {
-            const req = {};
-            const write = () => {};
-            resFake = sinon.fake();
-            const res = {
-                write,
-                send: resFake
-            };
-            const next = () => {};
-
-            expressMiddleware(profilingResultHandler)(req, res, next);
             res.send('{}');
             expect(resFake.callCount).to.equal(1);
         });
 
         it('should call validation function only once', () => {
-            const req = {};
-            const write = () => {};
-            const send = () => {};
-            const res = {
-                write,
-                send
-            };
-            const next = () => {};
-
-            const result = expressMiddleware(profilingResultHandler);
-
             result(req, res, next);
+
             res.send('{}');
             res.send('{}');
+            expect(applyValidationFake.callCount).to.equal(1);
         });
 
         it('should not throw exception if output data is not in JSON format', () => {
-            const req = {};
-            const write = () => {};
-            const send = () => {};
-            const res = {
-                write,
-                send
-            };
-            const next = () => {};
-
-            expressMiddleware(profilingResultHandler)(req, res, next);
+            result(req, res, next);
             expect(res.write).to.not.throw('');
         });
     });
