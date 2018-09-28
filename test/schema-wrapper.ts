@@ -1,5 +1,9 @@
-import { expect } from 'chai';
 import * as sinon from 'sinon';
+
+var chai = require("chai");
+var chaiAsPromised = require("chai-as-promised");
+chai.use(chaiAsPromised);
+var expect = chai.expect;
 
 import {
     wrapResolvers,
@@ -88,8 +92,9 @@ describe('schema-wrapper', () => {
             wrapResolvers(schema);
 
             const validity = {
+                ___validationResults: [],
                 ___globalValidationResultsCaptured: false,
-                ___validationResults: [new Error('test2'), new Error('test1')]
+                ___profilingData: []
             };
 
             const result = await field.resolve(
@@ -117,7 +122,9 @@ describe('schema-wrapper', () => {
             wrapResolvers(schema);
 
             const validity = {
-                ___validationResults: []
+                ___validationResults: [],
+                ___globalValidationResultsCaptured: false,
+                ___profilingData: []
             };
 
             await field.resolve(
@@ -128,9 +135,174 @@ describe('schema-wrapper', () => {
                     }
                 });
 
-            expect(validity.___validationResults).to.not.be.null;
             expect(validity.___validationResults.length).to.equal(1);
             expect(validity.___validationResults[0].message).to.equal('test1');
+        });
+
+        it('resolve should perform profiling if validity is set up and profiling enabled', async () => {
+            FieldValidationDefinitions['$'] = [() => {return new Error('test1')}];
+            const resolve = function (...args: any[]) {
+                return true;
+            };
+            const field = { resolve, name: 'Test' };
+
+            const type = new GraphQLObjectType([field], 'Test');
+            const typesMap = {
+                'Test': type
+            };
+            const schema = new GraphQLSchema(typesMap);
+            wrapResolvers(schema, {
+                wrapErrors: false,
+                enableProfiling: true,
+                unhandledErrorWrapper: (err: Error) => {return err}
+            });
+
+            const validity = {
+                ___validationResults: [],
+                ___globalValidationResultsCaptured: false,
+                ___profilingData: []
+            };
+
+            await field.resolve(
+                {
+                    parentType: 'Test',
+                    rootValue: {
+                        __graphQLValidity: validity
+                    }
+                });
+
+            expect(validity.___validationResults.length).to.equal(1);
+            expect(validity.___validationResults[0].message).to.equal('test1');
+        });
+
+        it('resolve should not throw exception during profiling failure', async () => {
+            FieldValidationDefinitions['$'] = [() => {return new Error('test2')}];
+            const resolve = function (...args: any[]) {
+                return true;
+            };
+            const field = { resolve, name: 'Test' };
+
+            const type = new GraphQLObjectType([field], 'Test');
+            const typesMap = {
+                'Test': type
+            };
+            const schema = new GraphQLSchema(typesMap);
+            wrapResolvers(schema, {
+                wrapErrors: false,
+                enableProfiling: true,
+                unhandledErrorWrapper: (err: Error) => {return err}
+            });
+
+            const validity = {};
+
+            expect(field.resolve).to.not.throw((
+                {
+                    parentType: 'Test',
+                    rootValue: {
+                        __graphQLValidity: validity
+                    }
+                }));
+        });
+
+        it('resolve should throw during validator exception', async () => {
+            FieldValidationDefinitions['$'] = [() => {return new Error('test2')}];
+            const resolve = function (...args: any[]) {
+                return true;
+            };
+            const field = { resolve, name: 'Test' };
+
+            const type = new GraphQLObjectType([field], 'Test');
+            const typesMap = {
+                'Test': type
+            };
+            const schema = new GraphQLSchema(typesMap);
+            wrapResolvers(schema, {
+                wrapErrors: false,
+                enableProfiling: true,
+                unhandledErrorWrapper: (err: Error) => {return err}
+            });
+
+            const validity = {};
+
+            expect(field.resolve).to.not.throw((
+                {
+                    parentType: 'Test',
+                    rootValue: {
+                        __graphQLValidity: validity
+                    }
+                }));
+        });
+
+        it('resolve should return result if validity is set up to return promise', async () => {
+            FieldValidationDefinitions['$'] = [() => {
+                return new Promise((resolve) => {
+                    resolve([new Error('test1')]);
+                });
+            }];
+
+            const resolve = function (...args: any[]) {
+                return true;
+            };
+            const field = { resolve, name: 'Test' };
+
+            const type = new GraphQLObjectType([field], 'Test');
+            const typesMap = {
+                'Test': type
+            };
+            const schema = new GraphQLSchema(typesMap);
+            wrapResolvers(schema);
+
+            const validity = {
+                ___validationResults: [],
+                ___globalValidationResultsCaptured: false,
+                ___profilingData: []
+            };
+
+            const result = await field.resolve(
+                {
+                    parentType: 'Test',
+                    rootValue: {
+                        __graphQLValidity: validity
+                    }
+                });
+            expect(result).to.be.true;
+        });
+
+        it('resolve should perform validation if validity is set up to return promise', async () => {
+            FieldValidationDefinitions['$'] = [() => {
+                return new Promise((resolve) => {
+                    resolve([new Error('test2')]);
+                });
+            }];
+
+            const resolve = function (...args: any[]) {
+                return true;
+            };
+            const field = { resolve, name: 'Test' };
+
+            const type = new GraphQLObjectType([field], 'Test');
+            const typesMap = {
+                'Test': type
+            };
+            const schema = new GraphQLSchema(typesMap);
+            wrapResolvers(schema);
+
+            const validity = {
+                ___validationResults: [],
+                ___globalValidationResultsCaptured: false,
+                ___profilingData: []
+            };
+
+            await field.resolve(
+                {
+                    parentType: 'Test',
+                    rootValue: {
+                        __graphQLValidity: validity
+                    }
+                });
+
+            expect(validity.___validationResults.length).to.equal(1);
+            expect(validity.___validationResults[0].message).to.equal('test2');
         });
     });
 });
