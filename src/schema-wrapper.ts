@@ -74,12 +74,11 @@ export function wrapResolvers(entity: any, config?: ValidityConfig) {
         config.unhandledErrorWrapper = config.unhandledErrorWrapper
             || onUnhandledError;
 
-        if (config.profilingResultHandler) {
+        if (config.enableProfiling) {
             profilingResultHandler.handler = config.profilingResultHandler ?
                 config.profilingResultHandler : profilingResultHandler.handler;
         }
     }
-
     if (entity.constructor.name === 'GraphQLSchema') {
         wrapSchema(entity, config);
     } else if (entity.constructor.name === 'GraphQLObjectType') {
