@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import * as sinon from "sinon";
 
 import {
     FieldValidationDefinitions,
@@ -60,6 +61,26 @@ describe('validation', () => {
 
             const result = applyValidation({ __graphQLValidity: validity }, '{"data": { "result" :"test"}}', () => {});
             expect(result).to.have.string('"errors":[{"message":"test2"},{"message":"test1"}]');
+        });
+
+        it('should call profiling handler if profiling data is present', async () => {
+            const handler = sinon.fake();
+            const validity = {
+                ___globalValidationResultsCaptured: false,
+                ___validationResults: [new Error('test2'), new Error('test1')],
+                ___profilingData: [],
+
+            };
+
+            applyValidation({ __graphQLValidity: validity }, '{"data": { "result" :"test"}}', handler);
+
+            await new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 1000);
+            });
+
+            expect(handler.calledOnce).to.be.true;
         });
     });
 
