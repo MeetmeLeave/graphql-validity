@@ -24,7 +24,7 @@
 
 import { applyValidation } from "./validation";
 
-export default (profilingResultHandler) => {
+export default (profilingResultHandler: { handler: (...args: any[]) => any }) => {
     /**
      * Middleware which will capture validation output and will add it to the original response
      *

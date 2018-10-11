@@ -21,33 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
-import { applyValidation } from "./validation";
-
-export default (profilingResultHandler: { handler: (...args: any[]) => any }) => {
-    /**
-     * Middleware which will capture validation output and will add it to the original response
-     *
-     * @param server - Hapi server
-     */
-    return function graphQLValidityHapiMiddleware(server: any) {
-        server.ext('onRequest', function (request: any, reply: any) {
-            request.__graphQLValidity = {
-                ___validationResults: [],
-                ___globalValidationResultsCaptured: false,
-                ___profilingData: []
-            };
-
-            return reply.continue();
-        });
-
-        server.ext('onPreResponse', function (request: any, reply: any) {
-            reply.request.response.source = applyValidation(
-                reply.request,
-                reply.request.response.source,
-                profilingResultHandler.handler
-            );
-            return reply.continue();
-        });
-    }
-}
+// this kept for backward compatibility for those who using old version of the
+// package
+export * from '..';

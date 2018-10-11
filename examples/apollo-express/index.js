@@ -6,7 +6,7 @@ const {
     FieldValidationDefinitions,
     wrapResolvers,
     graphQLValidityExpressMiddleware
-} = require('../../lib/index');
+} = require('../../index');
 
 const schema = require('./schema');
 const PORT = 4000;

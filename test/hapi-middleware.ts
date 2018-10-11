@@ -1,9 +1,9 @@
 import * as sinon from 'sinon';
 
 import { defaultProfilingResultHandler } from '../src/profiling';
-import hapiMiddleware from '../lib/hapi-middleware';
+import hapiMiddleware from '../src/hapi-middleware';
 import { mockModule } from "./helpers/mocks";
-import * as validation from "../lib/validation";
+import * as validation from "../src/validation";
 
 var chai = require("chai");
 var chaiAsPromised = require("chai-as-promised");
@@ -15,9 +15,9 @@ describe('hapi-middleware', () => {
         handler: defaultProfilingResultHandler
     };
 
-    let server;
-    let result;
-    let applyValidationFake;
+    let server: any;
+    let result: any;
+    let applyValidationFake: any;
     let sandbox: sinon.SinonSandbox;
 
     beforeEach(() => {

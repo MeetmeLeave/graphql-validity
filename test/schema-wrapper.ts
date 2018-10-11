@@ -1,5 +1,3 @@
-import * as sinon from "sinon";
-
 var chai = require("chai");
 var chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
@@ -8,8 +6,8 @@ var expect = chai.expect;
 import {
     wrapResolvers,
     Processed
-} from '../lib/schema-wrapper';
-import { FieldValidationDefinitions } from "../lib";
+} from '../src/schema-wrapper';
+import { FieldValidationDefinitions } from "..";
 
 describe('schema-wrapper', () => {
     describe('wrapResolvers', () => {
@@ -59,7 +57,7 @@ describe('schema-wrapper', () => {
             const field = { resolve };
             wrapResolvers(field);
 
-            expect(field[Processed]).to.be.true;
+            expect((field as any)[Processed]).to.be.true;
         });
 
         it('resolve should return result if validity is not set up', async () => {
@@ -132,7 +130,7 @@ describe('schema-wrapper', () => {
                 });
 
             expect(validity.___validationResults.length).to.equal(1);
-            expect(validity.___validationResults[0].message).to.equal('test1');
+            expect((validity.___validationResults[0] as any).message).to.equal('test1');
         });
 
         it('resolve should perform profiling if validity is set up and profiling enabled', async () => {
@@ -449,7 +447,7 @@ describe('schema-wrapper', () => {
                 });
 
             expect(validity.___validationResults.length).to.equal(1);
-            expect(validity.___validationResults[0].message).to.equal('test2');
+            expect((validity.___validationResults[0] as any).message).to.equal('test2');
         });
 
         it('shouldn\'t replace resolver for type not implementing getFields', async () => {
@@ -611,13 +609,13 @@ class GraphQLSchema extends GraphQLSchema2 {
 }
 
 class FieldsType1 {
-    constructor(public field) {
+    constructor(public field: any) {
 
     }
 }
 
 class FieldsType2 extends FieldsType1 {
-    constructor(public field1, field2) {
+    constructor(public field1: any, field2: any) {
         super(field2);
     }
 }

@@ -4,7 +4,7 @@ const {
     FieldValidationDefinitions,
     wrapResolvers,
     graphQLValidityHapiMiddleware
-} = require('../../lib/index');
+} = require('../../index');
 
 const schema = require('./schema');
 

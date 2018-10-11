@@ -145,7 +145,11 @@ function validateFieldResolution(
 
         if (requestContext.validity) {
             let validationResults = getValidationResults(requestContext.validity);
-            let validators = getValidators(field, requestContext.parentTypeName, requestContext.validity);
+            let validators = getValidators(
+                field,
+                String(requestContext.parentTypeName),
+                requestContext.validity
+            );
 
             const result = processValidators(validators, validationResults, args);
             if (result && result.then) {

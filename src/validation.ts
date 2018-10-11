@@ -47,7 +47,7 @@ export function getResponseValidationResults(validity: any, data: any) {
                 })
                 .concat(
                     validity.___validationResults.map(
-                        error => {
+                        (error: Error) => {
                             return {
                                 message: processError(error, validity.config).message
                             };
@@ -70,12 +70,14 @@ function processError(error: any, config: ValidityConfig) {
     }
 
     if (config && config.wrapErrors) {
-        const result = config.unhandledErrorWrapper(error);
-        return {
-            message: result.message,
-            path: error.path,
-            location: error.location
-        };
+        if (config.unhandledErrorWrapper) {
+            const result = config.unhandledErrorWrapper(error);
+            return {
+                message: result.message,
+                path: error.path,
+                location: error.location
+            };
+        }
     }
 
     return error;

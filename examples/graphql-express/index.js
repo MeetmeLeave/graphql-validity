@@ -6,7 +6,7 @@ const {
     wrapResolvers,
     graphQLValidityExpressMiddleware,
     ValidityError
-} = require('../../lib/index');
+} = require('../../index');
 
 const schema = require('./schema');
 

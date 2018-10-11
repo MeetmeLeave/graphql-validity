@@ -30,9 +30,9 @@ export declare type ValidityConfig = {
     wrapErrors: boolean;
     // Enables profiling data output, to analyze the graphql performance
     enableProfiling: boolean;
-    // Error wrapper function, which will modift error objects output
+    // Error wrapper function, which will modify error objects output
     unhandledErrorWrapper?: (error: Error) => Error;
-    // Function which will recieve output, with profiling information for analysis
+    // Function which will receive output, with profiling information for analysis
     profilingResultHandler?: (profilingResult: any) => void;
 }
 
@@ -44,7 +44,7 @@ export declare type FieldValidationObject = {
     parentTypeName?: string;
     // validity object used for graphql request to store validation results
     validity?: any;
-    // path inside the AST tree used by grapql engine
+    // path inside the AST tree used by graphql engine
     astPath?: string;
     // profiling start time
     pst?: Number;
@@ -56,7 +56,7 @@ export declare type FieldValidationObject = {
 
 // Error object, which must path through error masking
 export class ValidityError extends Error {
-    constructor(message) {
+    constructor(message: string) {
         const resultingMessage = '_Validity_' + message;
         super(resultingMessage);
         this.name = "ValidityError";
