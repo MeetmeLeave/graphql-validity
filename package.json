@@ -28,7 +28,7 @@
   "author": "Vlad Martynenko <vladimir.martynenko.work@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@types/chai": "^4.1.5",
+    "@types/chai": "^4.1.6",
     "@types/mocha": "^2.2.48",
     "@types/mock-require": "^2.0.0",
     "@types/node": "^10.11.2",
