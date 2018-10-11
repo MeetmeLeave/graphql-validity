@@ -2,10 +2,15 @@
   "name": "graphql-validity",
   "version": "0.10.9",
   "description": "Make business logic validation easy on the graphql side without adding any declarations or modifications to the existing graphql schema.",
-  "main": "lib/index.js",
+  "main": "index.js",
   "scripts": {
-    "build": "rm -rf lib && ./node_modules/.bin/tsc -p src && npm test",
-    "test": "./node_modules/.bin/tsc -p src && ./node_modules/.bin/nyc mocha"
+    "clean:dts": "find . -name '*.d.ts' -not -wholename '*node_modules*' -type f -delete",
+    "clean:map": "find . -name '*.js.map' -not -wholename '*node_modules*' -type f -delete",
+    "clean:js": "find . -name '*.js' -not -wholename '*node_modules*' -type f -delete",
+    "clean:test": "rm -rf .nyc_output coverage",
+    "clean": "npm run clean:test && npm run clean:dts && npm run clean:map && npm run clean:js",
+    "build": "tsc && npm test",
+    "test": "tsc && nyc mocha"
   },
   "keywords": [
     "graphql",

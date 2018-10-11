@@ -1,9 +1,9 @@
 import * as sinon from 'sinon';
 
 import { defaultProfilingResultHandler } from '../src/profiling';
-import koaMiddleware from '../lib/koa-middleware';
+import koaMiddleware from '../src/koa-middleware';
 import { mockModule } from "./helpers/mocks";
-import * as validation from "../lib/validation";
+import * as validation from "../src/validation";
 
 var chai = require("chai");
 var chaiAsPromised = require("chai-as-promised");
@@ -16,11 +16,11 @@ describe('koa-middleware', () => {
         handler: defaultProfilingResultHandler
     };
 
-    let req;
-    let next;
-    let ctx;
-    let result;
-    let applyValidationFake;
+    let req: any;
+    let next: any;
+    let ctx: any;
+    let result: any;
+    let applyValidationFake: any;
     let sandbox: sinon.SinonSandbox;
 
     beforeEach(() => {

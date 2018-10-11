@@ -7,11 +7,11 @@ import {
     getValidationResults,
     getValidators,
     applyValidation,
-} from '../lib/validation';
+} from '../src/validation';
 
 import {
     ValidityError
-} from '../lib/helpers';
+} from '../src/helpers';
 
 describe('validation', () => {
     describe('getValidators', () => {
@@ -142,7 +142,9 @@ describe('validation', () => {
                 ___validationResults: [validationError, globalError],
                 config: {
                     wrapErrors: true,
-                    unhandledErrorWrapper: function (err) {return new Error('test');}
+                    unhandledErrorWrapper: function (err: Error) {
+                        return new Error('test');
+                    }
                 },
             };
 

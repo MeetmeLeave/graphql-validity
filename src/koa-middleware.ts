@@ -24,14 +24,17 @@
 
 import { applyValidation } from "./validation";
 
-export default (profilingResultHandler) => {
+export default (profilingResultHandler: { handler: (...args: any[]) => any }) => {
     /**
      * Middleware which will capture validation output and will add it to the original response
      *
      * @param ctx - koa context
      * @param next - next call
      */
-    return async function graphQLValidityKoaMiddleware(ctx, next) {
+    return async function graphQLValidityKoaMiddleware(
+        ctx: any,
+        next: (...args: any[]) => any
+    ) {
         let { req } = ctx;
         try {
             req.__graphQLValidity = {
@@ -42,7 +45,11 @@ export default (profilingResultHandler) => {
 
             await next();
 
-            ctx.body = applyValidation(req, ctx.body, profilingResultHandler.handler);
+            ctx.body = applyValidation(
+                req,
+                ctx.body,
+                profilingResultHandler.handler
+            );
         }
         catch (err) {
             console.error(err);

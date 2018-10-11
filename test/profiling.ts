@@ -4,7 +4,7 @@ import * as sinon from 'sinon';
 import {
     storeProfilingInfo,
     defaultProfilingResultHandler
-} from '../lib/profiling';
+} from '../src/profiling';
 
 describe('profiling', () => {
     it('storeProfilingInfo, should add profiling data', () => {
@@ -14,14 +14,16 @@ describe('profiling', () => {
 
         storeProfilingInfo(validity, 'path', 'profile');
 
-        expect(validity.___profilingData.length).to.equal(1);
-        expect(validity.___profilingData[0].path).to.equal('path');
-        expect(validity.___profilingData[0].profile).to.equal('profile');
+        const profilingData: any = validity.___profilingData;
+
+        expect(profilingData.length).to.equal(1);
+        expect(profilingData[0].path).to.equal('path');
+        expect(profilingData[0].profile).to.equal('profile');
     });
 
     it('defaultProfilingResultHandler, should output to console when profiling data is set', () => {
         let spy = sinon.spy(console, 'log');
-        let profilingData = [];
+        let profilingData: any[] = [];
         defaultProfilingResultHandler(profilingData, '0');
         expect(spy.notCalled).to.be.true;
         profilingData.push('test');

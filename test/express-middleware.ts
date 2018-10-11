@@ -1,9 +1,9 @@
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import * as validation from '../lib/validation';
+import * as validation from '../src/validation';
 
-import { defaultProfilingResultHandler } from '../lib/profiling';
-import expressMiddleware from '../lib/express-middleware';
+import { defaultProfilingResultHandler } from '../src/profiling';
+import expressMiddleware from '../src/express-middleware';
 import { mockModule } from "./helpers/mocks";
 
 describe('express-middleware', () => {
@@ -11,14 +11,14 @@ describe('express-middleware', () => {
         handler: defaultProfilingResultHandler
     };
 
-    let req;
-    let write;
-    let send;
-    let res;
-    let next;
-    let result;
-    let resFake;
-    let applyValidationFake;
+    let req: any;
+    let write: any;
+    let send: any;
+    let res: any;
+    let next: any;
+    let result: any;
+    let resFake: any;
+    let applyValidationFake: any;
     let sandbox: sinon.SinonSandbox;
 
     beforeEach(() => {

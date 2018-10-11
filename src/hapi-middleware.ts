@@ -24,14 +24,14 @@
 
 import { applyValidation } from "./validation";
 
-export default (profilingResultHandler) => {
+export default (profilingResultHandler: { handler: (...args: any[]) => any }) => {
     /**
      * Middleware which will capture validation output and will add it to the original response
      *
      * @param server - Hapi server
      */
-    return function graphQLValidityHapiMiddleware(server) {
-        server.ext('onRequest', function (request, reply) {
+    return function graphQLValidityHapiMiddleware(server: any) {
+        server.ext('onRequest', function (request: any, reply: any) {
             request.__graphQLValidity = {
                 ___validationResults: [],
                 ___globalValidationResultsCaptured: false,
@@ -41,7 +41,7 @@ export default (profilingResultHandler) => {
             return reply.continue();
         });
 
-        server.ext('onPreResponse', function (request, reply) {
+        server.ext('onPreResponse', function (request: any, reply: any) {
             reply.request.response.source = applyValidation(
                 reply.request,
                 reply.request.response.source,
