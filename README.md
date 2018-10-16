@@ -1,15 +1,39 @@
 # GraphQL Validity
 
-The original purpose of this library is to make business logic validation easy on the graphql side without adding any declarations or modifications to the existing graphql schema.
+### What?
+GraphQL Validity is a library for node.js that allows you to add a business logic validation layer to your BE, avoiding updates to your resolve functions and changing the look and fill of the graphql schema you are using.
 
-There are common patterns which fill really wrong to perform business logic validation inside the graphql:
-1. Adding validation errors/warnings to the schema itself
-2. Building functions compositions inside the resolve functions to replace resolver with validator which calls resolver after validation
-3. Put validation logic inside the resolve function along with business logic
+This library originally was created for `graphql-express` package, but also supports `apollo-server`.
 
-This library allows you to declare all the validators separately from the schema implementation and keep them readable and usable.
+### Why?
+This library is a result of inconvenience for validation implementation using common graphql tools in js for the business logic.
 
-The basic example usage will be as follow
+The result of graphql operation is rather a value when operation was successful or an error if operation has failed. That works for basic cases, like permissions validation. You grab the field, you don
+t have rights to see it and you get an error, if you have rights the value is there. The problem comes, when you need to have 'soft' error inside the response along with value. 
+
+Imagine the following case:
+1. User add a product to the cart through mutation, and gets an OK response.
+2. User goes back to the store to check other stock you have, meanwhile someone orders the same product user has in the cart and it is out of stock.
+3. User adds another product to the cart and gets an error, that his previous product is not available anymore. The problem is that we have to chose now, do we send an error to user or we need to send success and than throw that error during checkout.
+
+This basic example might sound not scary enough overall, but one way or another application might get to the point where this can become a problem and app will have to bend the logic to comply the API.
+
+Another issue this library tries to solve is the way validation happens for the business logic in the graphql.
+
+Those are common patterns people use to handle the validation:
+1. Adding validation errors/warnings to the schema itself - the WORST of them all, you simply mix data with metadata.
+2. Building functions compositions inside the resolve functions to replace resolver with validator which calls resolver after validation. - that can work, but first you are complicating the code without any good reason. Second you make graphql engine slower, especially if the wrapper function returns promise. And third your validation is scattered across the code and the more resolvers you have the more unneeded duplicate code you will generate. And last but no least the separation of concerns will hit you in the back, mixing things like auth, data sanity checks and actual business logic is not the best you can do here.
+3. Put validation logic inside the resolve function along with business logic - it also can work, but has similar flaws as the point 2 above.
+
+All of those can get the job done, but if you have a growing API, which is also a subject to change, or you share validation patterns through different resolve functions, you can easily make your self a bad favor by applying one of those to your code.
+
+### How?
+
+This library allows you to declare all the validators separately from the schema implementation and keep it readable and usable. 
+
+It checks ease of maintenance, ease of change, and separation of concerns is also covered.
+
+The most basic example usage:
 ```javascript
 //imports
 const express = require('express');
@@ -17,7 +41,7 @@ const graphqlHTTP = require('express-graphql');
 const {
     FieldValidationDefinitions,
     wrapResolvers,
-    graphQLValidityMiddleware
+    graphQLValidityExpressMiddleware
 } = require('graphql-validity');
 
 // get the schema object
@@ -27,40 +51,21 @@ const app = express();
 
 // Define validator functions
 // each function should throw an error or return array of error objects or an empty array if everything is good
-function validateSomeTestThing(...args) {
-    return [new Error('Wrong stuff here!')];
-}
-
-function applyToAll(...args) {
-    return [new Error('All failed!')];
-}
 
 function applyGlobally(...args) {
     return [new Error('Global failure!')];
 }
 
-function validateSomeTestMutation(...args) {
-    return [new Error('testMutation failed!')];
-}
-
 // Define what to validate:
 // $ will be checked ones, but for any resolver called
-// * - will be called for each resolver
-// ObjectName:FieldName - Will be called for a field resolver on a particular object
-// ObjectName - Will be called for each resolver field on a particular object
 FieldValidationDefinitions['$'] = [applyGlobally];
-FieldValidationDefinitions['*'] = [applyToAll];
-FieldValidationDefinitions['Mutation:testMutation'] = [validateSomeTestMutation];
-FieldValidationDefinitions['TestType'] = [validateSomeTestThing];
-FieldValidationDefinitions['TestType:first'] = [validateSomeTestThing];
-FieldValidationDefinitions['TestType:second'] = [validateSomeTestThing];
 
 // Wraps your resolvers schema with validators automatically
 wrapResolvers(schema);
 
 // Add middleware to express to make this lib work, as we need to connect schema validation 
 // results with request/response we got
-app.use(graphQLValidityMiddleware);
+app.use(graphQLValidityExpressMiddleware);
 
 app.use('/graphql', graphqlHTTP((request) => {
     return {
@@ -75,11 +80,51 @@ app.use('/graphql', graphqlHTTP((request) => {
 app.listen(4000);
 ```
 
-More info and stuff will come in the future as lib is still work in progress check the examples section for more detailed example..
+To make it working you have to do following things:
 
-The current road map:
-
-1. Stabilization, tests, examples, docs, etc.
-2. Adding optional performance checks to track speed of each call
-3. Adding optional built in logging of requests
-4. Adding third party output options like warnings/info etc along data and errors
+Import the code:
+```javascript
+const {
+    FieldValidationDefinitions,
+    wrapResolvers,
+    graphQLValidityExpressMiddleware
+} = require('graphql-validity');
+```
+Add validation function to a certain level of schema, by passing an array of functions doing the validation:
+```javascript
+FieldValidationDefinitions['$'] = [applyGlobally];
+```
+ Call the wrapResolvers function with your schema object as a parameter:
+ ```javascript
+wrapResolvers(schema);
+```
+Add the middleware to your express instance, imported above:
+```javascript
+app.use(graphQLValidityExpressMiddleware);
+```
+Add the express request object to the rootValue of your graphql express instance
+```javascript
+app.use('/graphql', graphqlHTTP((request) => {
+    return {
+        schema,
+        graphiql: true,
+        // Do not forget to pass your request as a rootValue, 
+        // as we need to connect custom validation execution result with response
+        rootValue: request
+    }
+}));
+```
+ 
+ The reason why this process has so many stages is because graphql instance resolution is separate from the actual `express` work, so it add couple of additional stages I could not avoid when I was writing this library.
+ 
+ ### Advanced configuration level
+ 
+ There are certain level of validation for the schema:
+ 1. First resolver encountered, checked only once:
+`FieldValidationDefinitions['$']` - usually used for permissions validation.
+2. All of the resolvers available:
+`FieldValidationDefinitions['*']` - rarely used, but still can be applied to something like input sanity checks for each field of the object.
+3. All the resolvers for particular field:
+`FieldValidationDefinitions['TestType']` - can be used to check all the fields of the given object
+4. Resolver for particular object field:
+`FieldValidationDefinitions['TestType:first']` - the example usage will be to have an object with public fields and a single private filed, which can be accessed only by authorized person. For example user object which contains a password field, or personal address.
