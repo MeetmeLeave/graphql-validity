@@ -23,9 +23,22 @@
  */
 
 // The default profiling result display
-export let defaultProfilingResultHandler = (profilingData: any, __graphQLValidityRequestId:any) => {
+export let defaultProfilingResultHandler = (
+    profilingData: any,
+    __graphQLValidityRequestId: any
+) => {
     if (profilingData.length > 0) {
         console.log(JSON.stringify(profilingData, null, 2), __graphQLValidityRequestId);
+    }
+};
+
+// The default profiling visualization function
+export let defaultVisualizeProfiling = (
+    profilingData: any,
+    __graphQLValidityRequestId: any
+) => {
+    if (profilingData.length > 0) {
+        console.log(JSON.stringify(profilingData, null, 4), __graphQLValidityRequestId);
     }
 };
 
