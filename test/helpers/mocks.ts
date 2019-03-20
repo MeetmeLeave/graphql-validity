@@ -9,7 +9,7 @@ export function mockModule<T extends { [K: string]: any }>(
         returnOverrides?: Partial<{ [K in keyof T]: T[K] }>
     ): void => {
         const functions = Object.keys(moduleToMock);
-        const returns = returnOverrides || {};
+        const returns = returnOverrides || {} as any;
         functions.forEach((f) => {
             sandbox.stub(moduleToMock, f).callsFake(returns[f] || defaultMockValuesForMock[f]);
         });
