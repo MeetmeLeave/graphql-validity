@@ -29,18 +29,18 @@
   "license": "MIT",
   "dependencies": {
     "@types/chai": "4.1.7",
-    "@types/mocha": "5.2.6",
+    "@types/mocha": "5.2.7",
     "@types/mock-require": "2.0.0",
-    "@types/node": "11.11.4",
-    "@types/sinon": "7.0.10",
+    "@types/node": "12.6.3",
+    "@types/sinon": "7.0.13",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "mocha": "5.2.0",
-    "nyc": "13.3.0",
-    "sinon": "7.3.0",
-    "source-map-support": "0.5.11",
-    "ts-node": "8.0.3",
-    "typescript": "3.3.4000"
+    "nyc": "14.1.1",
+    "sinon": "7.3.2",
+    "source-map-support": "0.5.12",
+    "ts-node": "8.3.0",
+    "typescript": "3.5.3"
   },
   "nyc": {
     "extension": [
